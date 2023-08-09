@@ -10,6 +10,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Mapping, Optional, Set, Tuple, Union
 from itertools import takewhile
+import sys
+sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from logic_utils import frozen, memoized_parameterless_method
 
 @lru_cache(maxsize=100) # Cache the return value of is_variable
@@ -22,7 +24,10 @@ def is_variable(string: str) -> bool:
     Returns:
         ``True`` if the given string is a variable name, ``False`` otherwise.
     """
-    return string[0] >= 'p' and string[0] <= 'z' and (len(string) == 1 or string[1:].isdecimal())
+    if type(string) == str:
+        return string[0] >= 'p' and string[0] <= 'z' and (len(string) == 1 or string[1:].isdecimal())
+    else:
+        return False
 
 @lru_cache(maxsize=100) # Cache the return value of is_constant
 def is_constant(string: str) -> bool:
@@ -96,7 +101,7 @@ class Formula:
 
     def __init__(self, root: str, first: Optional[Formula] = None, second: Optional[Formula] = None):
         """Initializes a `Formula` from its root and root operands.
-
+        
         Parameters:
             root: the root for the formula tree.
             first: the first operand for the root, if the root is a unary or
@@ -118,42 +123,28 @@ class Formula:
     @memoized_parameterless_method
     def __repr__(self) -> str:
         """Computes the string representation of the current formula.
-
+        
         Returns:
             The standard string representation of the current formula.
         """
-        attributes = dir(self)
-        if 'root' in attributes:
-            if isinstance(self.root, Formula):
-                root = self.root.__repr__()
-            else:
-                root = self.root
-            if 'first' in attributes:
-                if isinstance(self.first, Formula):
-                    first = self.first.__repr__()
-                else:
-                    first = self.first
-
-                if is_unary(self.root):
-                    string = root + first
-
-                else:
-                    assert is_binary(self.root) and 'second' in attributes
-                    if isinstance(self.second, Formula):
-                        second = self.second.__repr__()
-                    else:
-                        second = self.second
-                    string = '(' + first + root + second + ')'
-            else: string = root
+        if is_constant(self.root) or is_variable(self.root):
+            string = self.root
+            
+        elif is_unary(self.root):
+            string = self.root + self.first.__repr__()
+            
+        else:
+            assert is_binary(self.root)
+            string = '(' + self.first.__repr__() + self.root + self.second.__repr__() + ')'
         return string
         # Task 1.1
 
     def __eq__(self, other: object) -> bool:
         """Compares the current formula with the given one.
-
+        
         Parameters:
             other: object to compare to.
-
+        
         Returns:
             ``True`` if the given object is a `Formula` object that equals the
             current formula, ``False`` otherwise.
@@ -162,10 +153,10 @@ class Formula:
 
     def __ne__(self, other: object) -> bool:
         """Compares the current formula with the given one.
-
+        
         Parameters:
             other: object to compare to.
-
+        
         Returns:
             ``True`` if the given object is not a `Formula` object or does not
             equal the current formula, ``False`` otherwise.
@@ -178,32 +169,34 @@ class Formula:
     @memoized_parameterless_method
     def variables(self) -> Set[str]:
         """Finds all variable names in the current formula.
-
+        
         Returns:
             A set of all variable names used in the current formula.
         """
-        if is_variable(str(self.root)):
-            root = {str(self.root)}
-            return root
-        elif isinstance(self.root, Formula):
-            root = self.root.variables()
-            return root
-
-        if 'first' in dir(self):
-            if is_variable(str(self.first)):
-                first = {str(self.first)}
-            elif isinstance(self.first, Formula):
-                first = self.first.variables()
-
-            if 'second' in dir(self):
-                if is_variable(str(self.second)):
-                    second = {str(self.second)}
-                    return first | second
-                elif isinstance(self.second,Formula):
-                    second = self.second.variables()
-                    return first | second
+        if is_variable(self.root):
+            return {self.root}
+            
+        elif is_unary(self.root):
+            if is_variable(self.first):
+                first = {self.first}
             else:
-                return first
+                first = self.first.variables()
+                
+            return first
+            
+        elif is_binary(self.root):
+            if is_variable(self.first):
+                first = {self.first}
+            elif not is_constant(self.first):
+                first = self.first.variables()
+                
+            if is_variable(self.second):
+                second = {self.second}
+            elif not is_constant(self.second):
+                second = self.second.variables()
+                
+            return first | second
+            
         else:
             return set()
         # Task 1.2
@@ -211,27 +204,24 @@ class Formula:
     @memoized_parameterless_method
     def operators(self) -> Set[str]:
         """Finds all operators in the current formula.
-
+        
         Returns:
             A set of all operators (including ``'T'`` and ``'F'``) used in the
             current formula.
         """
-        if is_constant(self.root) or is_unary(self.root) or is_binary(self.root):
-            root = {self.root}
-        else:
-            root = set()
-
-        if 'first' in dir(self):
-            if isinstance(self.first, Formula):
-                first = self.first.operators()
-            if 'second' in dir(self):
-                if isinstance(self.second, Formula):
-                    second = self.second.operators()
-            else:
-                second = set()
-        else:
-            first, second = set(), set()
-        return root | first | second
+        operators = set()
+        if not is_variable(self.root):
+            operators = operators | {self.root}
+        
+        if is_unary(self.root):
+            operators = operators | self.first.operators()
+            
+        elif is_binary(self.root):
+            operators = operators | self.first.operators()
+            operators = operators | self.second.operators()
+            
+        return operators
+            
         # Task 1.3
 
     @staticmethod
@@ -328,20 +318,27 @@ class Formula:
         Returns:
             The polish notation representation of the current formula.
         """
-        root = str(self.root)
-        if 'first' in dir(self):
+
+        if is_unary(self.root):
             first = self.first
-            if 'first' in dir(first):
+            if isinstance(self.first, Formula):
                 first = Formula.polish(first)
-            if 'second' in dir(self):
-                second = self.second
-                if 'first' in dir(second):
-                    second = Formula.polish(second)
-                return str(root) + str(first) + str(second)
-            else:
-                return str(root) + str(first)
+            
+            return self.root + str(first)
+            
+        elif is_binary(self.root):
+            first = self.first
+            if isinstance(self.first, Formula):
+                first = Formula.polish(first)
+            
+            second = self.second
+            if isinstance(self.second, Formula):
+                second = Formula.polish(second)
+            
+            return self.root + str(first) + str(second)
+            
         else:
-            return str(root)
+            return self.root
 
         # Optional Task 1.7
 
