@@ -217,8 +217,7 @@ class Formula:
             operators = operators | self.first.operators()
             
         elif is_binary(self.root):
-            operators = operators | self.first.operators()
-            operators = operators | self.second.operators()
+            operators = operators | self.first.operators() | self.second.operators()
             
         return operators
             
