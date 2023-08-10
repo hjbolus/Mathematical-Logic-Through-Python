@@ -342,8 +342,7 @@ def conjoin_formulae(formulae: Iterable[Formula]) -> Formula:
     elif len(formulae) == 1:
         return formulae[0]
     else:
-        formula = Formula('&', formulae[0], conjoin_formulae(formulae[1:]))
-    return formula
+        return Formula('&', formulae[0], conjoin_formulae(formulae[1:]))
     # Personal task
 
 def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
