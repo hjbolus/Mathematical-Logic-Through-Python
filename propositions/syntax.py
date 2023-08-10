@@ -214,10 +214,10 @@ class Formula:
             operators = operators | {self.root}
         
         if is_unary(self.root):
-            operators = operators | self.first.operators()
+            return operators | self.first.operators()
             
         elif is_binary(self.root):
-            operators = operators | self.first.operators() | self.second.operators()
+            return operators | self.first.operators() | self.second.operators()
             
         return operators
             
