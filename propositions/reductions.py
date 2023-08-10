@@ -145,10 +145,3 @@ def tricolor_graph(graph: Graph) -> Union[Mapping[int, int], None]:
         if evaluate(formula, assignment):
             return assignment_to_3coloring(graph, assignment)
     return None
-
-#graph = (8, {(1,6),(1,4),(1,7),(2,4),(2,3),(3,5),(4,6),(4,5),(4,7),(5,7),(5,8),(7,8)})
-graph = (3, {(1,2) ,(1,3), (2,3)})
-#assignment = {'x11':True, 'x12':False, 'x13':False, 'x21':True, 'x22':False, 'x23':False, 'x31':False, 'x32':True, 'x33':False, 'x41':False, 'x42':True, 'x43':False, 'x51':True, 'x52':False, 'x53':False, 'x61':False, 'x62':False, 'x63':True, 'x71':False, 'x72':False, 'x73':True, 'x81':False, 'x82':True, 'x83':False}
-formula = graph3coloring_to_formula(graph)
-print(to_not_and(formula))
-#print(evaluate(formula, assignment))
