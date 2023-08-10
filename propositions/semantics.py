@@ -319,9 +319,6 @@ def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
         False
     """
     assert len(variables) > 0
-    #Associate each truth table row with a model
-    #Pick out the false rows, then synthesize for all except model for each of those models
-    #Conjoin them
     variables = list(variables)
     rows = zip(all_models(variables),values)
     conjuncts = [_synthesize_for_all_except_model(i[0]) for i in rows if not i[1]]
@@ -337,8 +334,17 @@ def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
             second = Formula('|',second, Formula('~',second))
             formula = Formula('&',formula, second)
     return formula
-
     # Optional Task 2.9
+
+def conjoin_formulae(formulae: Iterable[Formula]) -> Formula:
+    if len(formulae) == 0:
+        return formulae
+    elif len(formulae) == 1:
+        return formulae[0]
+    else:
+        formula = Formula('&', formulae[0], conjoin_formulae(formulae[1:]))
+    return formula
+    # Personal task
 
 def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
     """Checks if the given inference rule holds in the given model.
@@ -361,6 +367,11 @@ def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
         True
     """
     assert is_model(model)
+    if rule.assumptions:
+        formula = Formula('->', conjoin_formulae(rule.assumptions), rule.conclusion)
+    else:
+        formula = rule.conclusion
+    return evaluate(formula, model)
     # Task 4.2
 
 def is_sound_inference(rule: InferenceRule) -> bool:
@@ -373,4 +384,5 @@ def is_sound_inference(rule: InferenceRule) -> bool:
     Returns:
         ``True`` if the given inference rule is sound, ``False`` otherwise.
     """
+    return all((evaluate_inference(rule, model) for model in all_models(InferenceRule.variables(rule))))
     # Task 4.3
