@@ -143,18 +143,18 @@ class InferenceRule:
                 assert is_variable(variable)
         else:
             return None
-            
+
         map1 = dict(specialization_map1)
-            
+
         intersection = set(specialization_map1.keys()) & set(specialization_map2.keys())
         for key in intersection:
             if specialization_map1[key] != specialization_map2[key]:
                 return None
-            
+
         difference = set(specialization_map2.keys()) - set(specialization_map1.keys())
         for key in difference:
             map1[key] = specialization_map2[key]
-            
+
         return map1
         # Task 4.5a
 
@@ -163,29 +163,28 @@ class InferenceRule:
             -> Union[SpecializationMap, None]:
         """Computes the minimal specialization map by which the given formula
         specializes to the given specialization.
-            
+
         Parameters:
             general: non-specialized formula for which to compute the map.
             specialization: specialization for which to compute the map.
-            
+
         Returns:
             The computed specialization map, or ``None`` if `specialization` is
             in fact not a specialization of `general`.
         """
-        #1. Break them down by tree structure until one operand is a variable, then close that branch. 
+        #1. Break them down by tree structure until one operand is a variable, then close that branch.
         map1 = dict()
         if is_variable(general.root):
             map1 = {general.root: specialization}
             return map1
-            
+
         elif is_constant(general.root):
             if general.root == specialization.root:
                 return {}
             else:
                 return None
-                
-        if general.root == specialization.root:
             
+        if general.root == specialization.root:
             if is_unary(general.root):
                 map2 = InferenceRule._formula_specialization_map(general.first, specialization.first)
                 if map2 != None:
@@ -202,11 +201,11 @@ class InferenceRule:
                     map1 = InferenceRule._merge_specialization_maps(map1, map2)
                     map1 = InferenceRule._merge_specialization_maps(map1, map3)
                     return map1
+                    
                 else:
                     return None
         else:
             return None
-        
         # Task 4.5b
 
     def specialization_map(self, specialization: InferenceRule) -> \
@@ -221,6 +220,14 @@ class InferenceRule:
             The computed specialization map, or ``None`` if `specialization` is
             in fact not a specialization of the current rule.
         """
+        map1 = dict()
+        if len(self.assumptions) == len(specialization.assumptions):
+            for i,j in zip(self.assumptions, specialization.assumptions):
+                map1 = InferenceRule._merge_specialization_maps(map1, InferenceRule._formula_specialization_map(i,j))
+        else:
+            return None
+        map1 = InferenceRule._merge_specialization_maps(map1, InferenceRule._formula_specialization_map(self.conclusion,specialization.conclusion))
+        return map1 if map1 else None
         # Task 4.5c
 
     def is_specialization_of(self, general: InferenceRule) -> bool:
@@ -478,5 +485,3 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     assert main_proof.is_valid()
     assert lemma_proof.is_valid()
     # Task 5.2b
-
-#print(InferenceRule._formula_specialization_map(Formula.parse('F'),Formula.parse('x')))
