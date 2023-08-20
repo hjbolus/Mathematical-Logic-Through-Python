@@ -12,7 +12,6 @@ from typing import AbstractSet, FrozenSet, List, Mapping, Optional, Sequence, \
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from logic_utils import frozen, memoized_parameterless_method
-
 from syntax import *
 
 #: A mapping from variable names to formulas.
@@ -381,6 +380,14 @@ class Proof:
             line is justified as an assumption.
         """
         assert line_number < len(self.lines)
+        if Proof.Line.is_assumption(self.lines[line_number]):
+            return None
+        else:
+            assumptions = list()
+            for assumption in self.lines[line_number].assumptions:
+                assumptions.append(self.lines[assumption].formula)
+            conclusion = self.lines[line_number].formula
+            return InferenceRule(assumptions, conclusion)
         # Task 4.6a
 
     def is_line_valid(self, line_number: int) -> bool:
@@ -406,6 +413,17 @@ class Proof:
                be previous lines.
         """
         assert line_number < len(self.lines)
+        line = self.lines[line_number]
+        if Proof.Line.is_assumption(line):
+            return any(str(line) == str(assumption) for assumption in self.statement.assumptions)
+            
+        else:
+            rule_was_given = any(line.rule == rule for rule in self.rules)
+            rule_matches_line = Proof.rule_for_line(self, line_number).is_specialization_of(line.rule)               
+            assumptions_are_prior = all(assumption < line_number for assumption in line.assumptions)
+            assumptions_match_line = all(i == j for i,j in zip([self.lines[k].formula for k in line.assumptions], Proof.rule_for_line(self, line_number).assumptions))
+            
+            return rule_was_given and rule_matches_line and assumptions_are_prior and assumptions_match_line
         # Task 4.6b
 
     def is_valid(self) -> bool:
@@ -416,6 +434,11 @@ class Proof:
             ``True`` if the current proof is a valid proof of its claimed
             statement via its inference rules, ``False`` otherwise.
         """
+        if self.lines:
+            each_line = all(self.is_line_valid(line) for line in range(len(self.lines)))
+            conclusion_matches = self.statement.conclusion == self.lines[-1].formula
+            return each_line and conclusion_matches
+        return False
         # Task 4.6c
 
 def prove_specialization(proof: Proof, specialization: InferenceRule) -> Proof:
