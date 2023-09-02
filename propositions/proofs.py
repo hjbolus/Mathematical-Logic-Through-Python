@@ -182,7 +182,7 @@ class InferenceRule:
                 return {}
             else:
                 return None
-            
+
         if general.root == specialization.root:
             if is_unary(general.root):
                 map2 = InferenceRule._formula_specialization_map(general.first, specialization.first)
@@ -191,16 +191,16 @@ class InferenceRule:
                     return map1
                 else:
                     return None
-                
+
             elif is_binary(general.root):
                 map2 = InferenceRule._formula_specialization_map(general.first, specialization.first)
                 map3 = InferenceRule._formula_specialization_map(general.second, specialization.second)
-                    
+
                 if map2 != None and map3 != None:
                     map1 = InferenceRule._merge_specialization_maps(map1, map2)
                     map1 = InferenceRule._merge_specialization_maps(map1, map3)
                     return map1
-                    
+
                 else:
                     return None
         else:
@@ -416,13 +416,13 @@ class Proof:
         line = self.lines[line_number]
         if Proof.Line.is_assumption(line):
             return any(str(line) == str(assumption) for assumption in self.statement.assumptions)
-            
+
         else:
             rule_was_given = any(line.rule == rule for rule in self.rules)
-            rule_matches_line = Proof.rule_for_line(self, line_number).is_specialization_of(line.rule)               
+            rule_matches_line = Proof.rule_for_line(self, line_number).is_specialization_of(line.rule)
             assumptions_are_prior = all(assumption < line_number for assumption in line.assumptions)
             assumptions_match_line = all(i == j for i,j in zip([self.lines[k].formula for k in line.assumptions], Proof.rule_for_line(self, line_number).assumptions))
-            
+
             return rule_was_given and rule_matches_line and assumptions_are_prior and assumptions_match_line
         # Task 4.6b
 
