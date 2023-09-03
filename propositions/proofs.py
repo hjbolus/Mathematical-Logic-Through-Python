@@ -435,7 +435,11 @@ class Proof:
         """
         if self.lines:
             each_line_is_valid = all(self.is_line_valid(line) for line in range(len(self.lines)))
+            if not each_line_is_valid:
+                print([self.is_line_valid(line) for line in range(len(self.lines))])
             conclusion_matches = self.statement.conclusion == self.lines[-1].formula
+            if not conclusion_matches:
+                print(self.statement.conclusion, ' != ', self.lines[-1].formula)
             return each_line_is_valid and conclusion_matches
         return False
         # Task 4.6c
@@ -502,11 +506,9 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
 
     for line in s_lemma_proof.lines:
         if not Proof.Line.is_assumption(line):
-
             rule = line.rule
             assumptions = [assumption+line_number for assumption in line.assumptions]
             new_lines.append(Proof.Line(line.formula, rule, assumptions))
-
         else:
             if not line.formula in main_proof.statement.assumptions:
                 for earlier_line in main_proof.lines:
@@ -519,17 +521,13 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
 
     for i in range(line_number+1, len(main_proof.lines)):
         if not Proof.Line.is_assumption(main_proof.lines[i]):
-
             formula = main_proof.lines[i].formula
             rule = main_proof.lines[i].rule
             assumptions = [assumption+adjustment if assumption >= line_number else assumption for assumption in main_proof.lines[i].assumptions]
             new_lines.append(Proof.Line(formula, rule, assumptions))
-
         else:
             new_lines.append(main_proof.lines[i])
-
     new_rules = set(lemma_proof.rules).union(set(main_proof.rules))
-
     proof1 = Proof(main_proof.statement, new_rules, new_lines)
     return proof1
 
@@ -573,10 +571,8 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     new_rules = set(rule for rule in main_proof.rules if rule != lemma_proof.statement).union(lemma_proof.rules)
 
     new_proof = _inline_proof_once(main_proof, find_first_use_of_rule(main_proof, lemma_proof.statement), lemma_proof)
-
     while uses_rule(new_proof, lemma_proof.statement):
         new_proof = _inline_proof_once(new_proof, find_first_use_of_rule(new_proof, lemma_proof.statement), lemma_proof)
-
     proof1 = Proof(main_proof.statement, new_rules, new_proof.lines)
     return proof1
     # Task 5.2b
