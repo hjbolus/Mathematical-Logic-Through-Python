@@ -7,12 +7,12 @@
 """Proofs by deduction in Propositional Logic."""
 
 from __future__ import annotations
-from typing import AbstractSet, FrozenSet, List, Mapping, Optional, Sequence, \
-                   Set, Tuple, Union
+from typing import AbstractSet, FrozenSet, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from syntax import *
+
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from logic_utils import frozen, memoized_parameterless_method
-from syntax import *
 
 #: A mapping from variable names to formulas.
 SpecializationMap = Mapping[str, Formula]
@@ -422,7 +422,6 @@ class Proof:
             rule_matches_line = Proof.rule_for_line(self, line_number).is_specialization_of(line.rule)
             assumptions_are_prior = all(assumption < line_number for assumption in line.assumptions)
             assumptions_match_line = all(i == j for i,j in zip([self.lines[k].formula for k in line.assumptions], Proof.rule_for_line(self, line_number).assumptions))
-
             return rule_was_given and rule_matches_line and assumptions_are_prior and assumptions_match_line
         # Task 4.6b
 
@@ -435,9 +434,9 @@ class Proof:
             statement via its inference rules, ``False`` otherwise.
         """
         if self.lines:
-            each_line = all(self.is_line_valid(line) for line in range(len(self.lines)))
+            each_line_is_valid = all(self.is_line_valid(line) for line in range(len(self.lines)))
             conclusion_matches = self.statement.conclusion == self.lines[-1].formula
-            return each_line and conclusion_matches
+            return each_line_is_valid and conclusion_matches
         return False
         # Task 4.6c
 
@@ -455,6 +454,14 @@ def prove_specialization(proof: Proof, specialization: InferenceRule) -> Proof:
     """
     assert proof.is_valid()
     assert specialization.is_specialization_of(proof.statement)
+
+    sub_map = proof.statement.specialization_map(specialization)
+    specialized_statement = proof.statement.specialize(sub_map)
+    specialized_lines = [Proof.Line(line.formula.substitute_variables(sub_map), line.rule, line.assumptions) if not Proof.Line.is_assumption(line) else Proof.Line(line.formula.substitute_variables(sub_map)) for line in proof.lines ]
+
+    proof1 = Proof(specialized_statement, proof.rules, specialized_lines)
+
+    return proof1
     # Task 5.1
 
 def _inline_proof_once(main_proof: Proof, line_number: int,
@@ -483,9 +490,64 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
     """
     assert main_proof.is_valid()
     assert line_number < len(main_proof.lines)
-    assert main_proof.lines[line_number].rule == lemma_proof.statement
+    assert str(main_proof.lines[line_number].rule) == str(lemma_proof.statement)
     assert lemma_proof.is_valid()
+
+    s_lemma_proof = prove_specialization(lemma_proof, Proof.rule_for_line(main_proof, line_number))
+    adjustment = len(lemma_proof.lines)-1
+
+    new_lines = []
+    for i in range(line_number):
+        new_lines.append(main_proof.lines[i])
+
+    for line in s_lemma_proof.lines:
+        if not Proof.Line.is_assumption(line):
+
+            rule = line.rule
+            assumptions = [assumption+line_number for assumption in line.assumptions]
+            new_lines.append(Proof.Line(line.formula, rule, assumptions))
+
+        else:
+            if not line.formula in main_proof.statement.assumptions:
+                for earlier_line in main_proof.lines:
+                    if line.formula == earlier_line.formula:
+                        rule, assumptions = earlier_line.rule, earlier_line.assumptions
+                        break
+                new_lines.append(Proof.Line(line.formula, rule, assumptions))
+            else:
+                new_lines.append(line)
+
+    for i in range(line_number+1, len(main_proof.lines)):
+        if not Proof.Line.is_assumption(main_proof.lines[i]):
+
+            formula = main_proof.lines[i].formula
+            rule = main_proof.lines[i].rule
+            assumptions = [assumption+adjustment if assumption >= line_number else assumption for assumption in main_proof.lines[i].assumptions]
+            new_lines.append(Proof.Line(formula, rule, assumptions))
+
+        else:
+            new_lines.append(main_proof.lines[i])
+
+    new_rules = set(lemma_proof.rules).union(set(main_proof.rules))
+
+    proof1 = Proof(main_proof.statement, new_rules, new_lines)
+    return proof1
+
     # Task 5.2a
+
+def uses_rule(proof: Proof, rule: InferenceRule) -> bool:
+    """Returns True if the given proof uses the given rule.
+    """
+    return any((line.rule == rule for line in proof.lines))
+
+def find_first_use_of_rule(proof: Proof, rule: InferenceRule) -> int:
+    """Returns the number of the first line that uses the given inference rule.
+    """
+    for i in range(len(proof.lines)):
+        if proof.lines[i].rule == rule:
+            return i
+    else:
+        return false
 
 def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     """Inlines the given proof of a "lemma" inference rule into the given proof
@@ -507,4 +569,14 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     """
     assert main_proof.is_valid()
     assert lemma_proof.is_valid()
+
+    new_rules = set(rule for rule in main_proof.rules if rule != lemma_proof.statement).union(lemma_proof.rules)
+
+    new_proof = _inline_proof_once(main_proof, find_first_use_of_rule(main_proof, lemma_proof.statement), lemma_proof)
+
+    while uses_rule(new_proof, lemma_proof.statement):
+        new_proof = _inline_proof_once(new_proof, find_first_use_of_rule(new_proof, lemma_proof.statement), lemma_proof)
+
+    proof1 = Proof(main_proof.statement, new_rules, new_proof.lines)
+    return proof1
     # Task 5.2b
