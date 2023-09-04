@@ -496,18 +496,19 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
     assert line_number < len(main_proof.lines)
     assert str(main_proof.lines[line_number].rule) == str(lemma_proof.statement)
     assert lemma_proof.is_valid()
-
+    
     s_lemma_proof = prove_specialization(lemma_proof, Proof.rule_for_line(main_proof, line_number))
-    adjustment = len(lemma_proof.lines)-1
+    adjustment = len(lemma_proof.lines)-2
 
     new_lines = []
-    for i in range(line_number):
+    for i in range(line_number-1):
         new_lines.append(main_proof.lines[i])
 
     for line in s_lemma_proof.lines:
         if not Proof.Line.is_assumption(line):
             rule = line.rule
-            assumptions = [assumption+line_number for assumption in line.assumptions]
+            assumptions = [assumption+line_number-1 for assumption in line.assumptions]
+            
             new_lines.append(Proof.Line(line.formula, rule, assumptions))
         else:
             if not line.formula in main_proof.statement.assumptions:
@@ -515,6 +516,7 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
                     if line.formula == earlier_line.formula:
                         rule, assumptions = earlier_line.rule, earlier_line.assumptions
                         break
+                    
                 new_lines.append(Proof.Line(line.formula, rule, assumptions))
             else:
                 new_lines.append(line)
@@ -524,13 +526,14 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
             formula = main_proof.lines[i].formula
             rule = main_proof.lines[i].rule
             assumptions = [assumption+adjustment if assumption >= line_number else assumption for assumption in main_proof.lines[i].assumptions]
+            
             new_lines.append(Proof.Line(formula, rule, assumptions))
+            
         else:
             new_lines.append(main_proof.lines[i])
+    
     new_rules = set(lemma_proof.rules).union(set(main_proof.rules))
-    proof1 = Proof(main_proof.statement, new_rules, new_lines)
-    return proof1
-
+    return Proof(main_proof.statement, new_rules, new_lines)
     # Task 5.2a
 
 def uses_rule(proof: Proof, rule: InferenceRule) -> bool:
