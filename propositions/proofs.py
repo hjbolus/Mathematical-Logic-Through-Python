@@ -436,10 +436,10 @@ class Proof:
         if self.lines:
             each_line_is_valid = all(self.is_line_valid(line) for line in range(len(self.lines)))
             if not each_line_is_valid:
-                print([self.is_line_valid(line) for line in range(len(self.lines))])
+                print([(str(line)+': '+str(self.is_line_valid(line))) for line in range(len(self.lines)) if not self.is_line_valid(line)])
             conclusion_matches = self.statement.conclusion == self.lines[-1].formula
             if not conclusion_matches:
-                print(self.statement.conclusion, ' != ', self.lines[-1].formula)
+                print('statement ' + str(self.statement.conclusion) + ' != conclusion ' + str(self.lines[-1].formula))
             return each_line_is_valid and conclusion_matches
         return False
         # Task 4.6c
@@ -496,28 +496,28 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
     assert line_number < len(main_proof.lines)
     assert str(main_proof.lines[line_number].rule) == str(lemma_proof.statement)
     assert lemma_proof.is_valid()
-    
+
     s_lemma_proof = prove_specialization(lemma_proof, Proof.rule_for_line(main_proof, line_number))
-    adjustment = len(lemma_proof.lines)-2
+    adjustment = len(lemma_proof.lines)-1
 
     new_lines = []
-    for i in range(line_number-1):
+    for i in range(line_number):
         new_lines.append(main_proof.lines[i])
 
     for line in s_lemma_proof.lines:
         if not Proof.Line.is_assumption(line):
             rule = line.rule
-            assumptions = [assumption+line_number-1 for assumption in line.assumptions]
-            
+            assumptions = [assumption+line_number for assumption in line.assumptions]
             new_lines.append(Proof.Line(line.formula, rule, assumptions))
+
         else:
             if not line.formula in main_proof.statement.assumptions:
                 for earlier_line in main_proof.lines:
                     if line.formula == earlier_line.formula:
                         rule, assumptions = earlier_line.rule, earlier_line.assumptions
                         break
-                    
                 new_lines.append(Proof.Line(line.formula, rule, assumptions))
+
             else:
                 new_lines.append(line)
 
@@ -526,14 +526,15 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
             formula = main_proof.lines[i].formula
             rule = main_proof.lines[i].rule
             assumptions = [assumption+adjustment if assumption >= line_number else assumption for assumption in main_proof.lines[i].assumptions]
-            
+
             new_lines.append(Proof.Line(formula, rule, assumptions))
-            
+
         else:
             new_lines.append(main_proof.lines[i])
-    
+
     new_rules = set(lemma_proof.rules).union(set(main_proof.rules))
     return Proof(main_proof.statement, new_rules, new_lines)
+
     # Task 5.2a
 
 def uses_rule(proof: Proof, rule: InferenceRule) -> bool:
@@ -548,7 +549,7 @@ def find_first_use_of_rule(proof: Proof, rule: InferenceRule) -> int:
         if proof.lines[i].rule == rule:
             return i
     else:
-        return false
+        return False
 
 def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     """Inlines the given proof of a "lemma" inference rule into the given proof
@@ -568,7 +569,7 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
         rules allowed in the two given proofs but without the "lemma" rule
         proved by `lemma_proof`.
     """
-    assert main_proof.is_valid()
+    assert main_proof.is_valid(), print('\n******************** invalid proof ********************\n', main_proof, '\n***************************************************\n')
     assert lemma_proof.is_valid()
 
     new_rules = set(rule for rule in main_proof.rules if rule != lemma_proof.statement).union(lemma_proof.rules)
@@ -579,3 +580,62 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     proof1 = Proof(main_proof.statement, new_rules, new_proof.lines)
     return proof1
     # Task 5.2b
+
+def parse_inference_rule(text:str) -> InferenceRule:
+    """Converts a copied-and-pasted string from an inference rule object into an InferenceRule object"""
+
+    assumption_str = text.split("[")[1].replace("'","").split("]")[0].split(",")
+    if assumption_str == ['']:
+        st_assumptions = []
+    else:
+        st_assumptions = [Formula.parse(i.replace("'",'').replace(" ",'')) for i in assumption_str]
+    st_conclusion = Formula.parse(text.split("==> '")[1].split("'")[0])
+    return InferenceRule(st_assumptions, st_conclusion)
+    # Personal task
+    
+def parse_proof(text: list[str]) -> Proof:
+    """Converts a copied-and-pasted string from a proof object, with \n\ added to the end of each line, into a Proof object"""
+
+    text = text.split('\n')
+
+    statement = parse_inference_rule(text[0])
+
+    rules = []
+    lines = []
+    on_rules = True
+    for i in text[1:]:
+        if on_rules:
+            if 'Lines' in i:
+                on_rules = False
+                continue
+            rules.append(parse_inference_rule(i))
+        elif 'QED' in i:
+            break
+        else:
+            afternumber = ')'.join(i.split(')')[1:])
+            formula = afternumber.split(' ')[1]
+            try:
+                formula = Formula.parse(formula)
+            except AssertionError:
+                print(i)
+            if 'Inference Rule ' in i:
+                i = i.split('Inference Rule ')[1]
+                if ' on lines ' in i:
+                    inferencerule, assumptions = i.split(' on lines ')
+                    inferencerule = parse_inference_rule(inferencerule)
+                    assumptions = [int(j) for j in assumptions[:-1].split(',')]
+
+                elif ' on line ' in i:
+                    inferencerule, assumptions = i.split(' on line ')
+                    inferencerule = parse_inference_rule(inferencerule)
+                    assumptions = [int(j) for j in assumptions[:-1].split(',')]
+
+                else:
+                    inferencerule = parse_inference_rule(i)
+                    assumptions = []
+                lines.append(Proof.Line(formula, inferencerule, assumptions))
+
+            else:
+                lines.append(Proof.Line(formula))
+    return Proof(statement, rules, lines)
+    # Personal task
