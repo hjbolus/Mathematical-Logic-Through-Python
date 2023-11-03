@@ -198,11 +198,11 @@ def prove_from_opposites(proof_of_affirmation: Proof,
     """
     assert proof_of_affirmation.is_valid()
     assert proof_of_negation.is_valid()
-    assert proof_of_affirmation.statement.assumptions == \
-           proof_of_negation.statement.assumptions
-    assert Formula('~', proof_of_affirmation.statement.conclusion) == \
-           proof_of_negation.statement.conclusion
+    assert proof_of_affirmation.statement.assumptions == proof_of_negation.statement.assumptions
+    assert Formula('~', proof_of_affirmation.statement.conclusion) == proof_of_negation.statement.conclusion
     assert proof_of_affirmation.rules == proof_of_negation.rules
+
+    return combine_proofs(proof_of_negation, proof_of_affirmation, conclusion, I2)
     # Task 5.6
 
 def prove_by_way_of_contradiction(proof: Proof) -> Proof:
@@ -231,4 +231,17 @@ def prove_by_way_of_contradiction(proof: Proof) -> Proof:
     assert proof.statement.assumptions[-1].root == '~'
     for rule in proof.rules:
         assert rule == MP or len(rule.assumptions) == 0
+
+    r = proof.statement.assumptions[-1].first
+
+    proof = remove_assumption(proof)
+    proof = prove_corollary(proof, Formula('->',Formula.parse('(p->p)'),r), N)
+    new_statement = InferenceRule(proof.statement.assumptions, r)
+
+    n = len(proof.lines)
+    new_lines = list(proof.lines)
+    new_lines.append(Proof.Line(Formula.parse('(p->p)'), I0, []))
+    new_lines.append(proof.Line(r, MP, [n, n-1]))
+
+    return Proof(new_statement, proof.rules, new_lines)
     # Task 5.7
