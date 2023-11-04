@@ -9,7 +9,6 @@
 from __future__ import annotations
 from typing import AbstractSet, FrozenSet, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from syntax import *
-
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from logic_utils import frozen, memoized_parameterless_method
@@ -541,6 +540,7 @@ def uses_rule(proof: Proof, rule: InferenceRule) -> bool:
     """Returns True if the given proof uses the given rule.
     """
     return any((line.rule == rule for line in proof.lines))
+    # Personal task
 
 def find_first_use_of_rule(proof: Proof, rule: InferenceRule) -> int:
     """Returns the number of the first line that uses the given inference rule.
@@ -550,6 +550,7 @@ def find_first_use_of_rule(proof: Proof, rule: InferenceRule) -> int:
             return i
     else:
         return False
+    # Personal task
 
 def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
     """Inlines the given proof of a "lemma" inference rule into the given proof
@@ -592,9 +593,9 @@ def parse_inference_rule(text:str) -> InferenceRule:
     st_conclusion = Formula.parse(text.split("==> '")[1].split("'")[0])
     return InferenceRule(st_assumptions, st_conclusion)
     # Personal task
-    
+
 def parse_proof(text: list[str]) -> Proof:
-    """Converts a copied-and-pasted string from a proof object, with \n\ added to the end of each line, into a Proof object"""
+    """Converts a copied-and-pasted string from a proof object, with triple quotes added to the start and end , into a Proof object"""
 
     text = text.split('\n')
 
@@ -638,4 +639,112 @@ def parse_proof(text: list[str]) -> Proof:
             else:
                 lines.append(Proof.Line(formula))
     return Proof(statement, rules, lines)
+    # Personal task
+
+def inference_rule_to_code(rule: InferenceRule) -> str:
+    """Converts an InferenceRule object into the constituent Python code, represented as a string"""
+
+    return 'InferenceRule([' + ', '.join([f"Formula.parse('{str(i)}')" for i in rule.assumptions]) + f"], Formula.parse('{str(rule.conclusion)}'))"
+    # Personal task
+
+def proof_to_code(proof: Proof) -> str:
+    """Converts a Proof object into the constituent Python code, represented as a string"""
+
+    text = 'Proof(\n'
+    statement = '\t' + inference_rule_to_code(proof.statement) + ',\n'
+    rules = '\t[' + ',\n\t\t'.join([inference_rule_to_code(i) for i in proof.rules]) + '],\n'
+    lines = '\t[Proof.Line(' + "),\n\t\tProof.Line(".join([f"Formula.parse('{i.formula}'), {inference_rule_to_code(i.rule)}, {list(i.assumptions)}"\
+        if not i.is_assumption() else f"Formula.parse('{i.formula}')" for i in proof.lines]) + ")])"
+
+    return text + statement + rules + lines
+    # Personal task
+
+def find_line_citations(proof: Proof, line_number: int) -> list:
+    """Returns a list of numbers representing lines that cite the given line"""
+    
+    line_list = []
+    for i in range(len(proof.lines)):
+        line = proof.lines[i]
+        if not line.is_assumption():
+            if line_number in line.assumptions:
+                line_list.append(i)
+    return line_list
+    # Personal task
+
+def find_first_instance_of_formula(proof: Proof, formula: Formula) -> int:
+    """Returns the line number of the first line containing the given formula"""
+    
+    for i in range(len(proof.lines)):
+        if proof.lines[i].formula == formula:
+            return i
+    # Personal task
+
+def remove_line(proof: Proof, line_number: int) -> Proof:
+    """Removes the specified line and updates assumption citations to match new line numbers"""
+    
+    citations = find_line_citations(proof, line_number)
+    if citations:
+        first_use = find_first_instance_of_formula(proof, proof.lines[line_number].formula)
+    
+    new_lines = []
+    for i in range(len(proof.lines)):
+        if i != line_number:
+            line = proof.lines[i]
+            if not line.is_assumption():
+                new_assumptions = []
+                for j in line.assumptions:
+                    if j == line_number:
+                        j = first_use
+                    elif j > line_number:
+                        j -= 1
+                    new_assumptions.append(j)
+                line = Proof.Line(line.formula, line.rule, new_assumptions)
+            new_lines.append(line)
+    new_proof = Proof(proof.statement, proof.rules, new_lines)
+    assert new_proof.is_valid(), print(new_proof)
+    return new_proof
+    # Personal task
+
+def find_uncited_lines(proof: Proof) -> list:
+    """Returns a list of line numbers that were not cited in the given proof"""
+    
+    cited_lines = set()
+    #cited_lines.add(len(proof.lines))
+    for line in proof.lines:
+        if not line.is_assumption() and line.assumptions:
+            for i in line.assumptions:
+                cited_lines.add(i)
+    return list(set(range(len(proof.lines)-1)) - cited_lines)
+    # Personal task
+
+def find_duplicate_lines(proof: Proof) -> list:
+    """Returns a list of lists of line numbers with matching formulae"""
+    
+    list1 = []
+    list2 = []
+    for i in range(len(proof.lines)):
+        if not i in list1:
+            list2 = []
+            formula = proof.lines[i].formula
+            for j in range(len(proof.lines)):
+                if i != j:
+                    if formula == proof.lines[j].formula:
+                        list2.append(j)
+            if list2:
+                [list1.append(i) for i in list2]
+    return list1
+    # Personal task
+
+def clean_proof(proof: Proof) -> Proof:
+    """Removes duplicate lines and unused lines, then adjusts assumption citations to match new line numbers"""
+    while find_duplicate_lines(proof) or find_uncited_lines(proof):
+        u = find_uncited_lines(proof)
+        if u:
+            proof = remove_line(proof, u[0])
+        else:
+            d = find_duplicate_lines(proof)
+            if d:
+                proof = remove_line(proof, d[0])
+    assert proof.is_valid()
+    return proof
     # Personal task
