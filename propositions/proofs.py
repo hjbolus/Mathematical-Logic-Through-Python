@@ -661,7 +661,7 @@ def proof_to_code(proof: Proof) -> str:
 
 def find_line_citations(proof: Proof, line_number: int) -> list:
     """Returns a list of numbers representing lines that cite the given line"""
-    
+
     line_list = []
     for i in range(len(proof.lines)):
         line = proof.lines[i]
@@ -673,7 +673,7 @@ def find_line_citations(proof: Proof, line_number: int) -> list:
 
 def find_first_instance_of_formula(proof: Proof, formula: Formula) -> int:
     """Returns the line number of the first line containing the given formula"""
-    
+
     for i in range(len(proof.lines)):
         if proof.lines[i].formula == formula:
             return i
@@ -681,11 +681,11 @@ def find_first_instance_of_formula(proof: Proof, formula: Formula) -> int:
 
 def remove_line(proof: Proof, line_number: int) -> Proof:
     """Removes the specified line and updates assumption citations to match new line numbers"""
-    
+
     citations = find_line_citations(proof, line_number)
     if citations:
         first_use = find_first_instance_of_formula(proof, proof.lines[line_number].formula)
-    
+
     new_lines = []
     for i in range(len(proof.lines)):
         if i != line_number:
@@ -707,19 +707,18 @@ def remove_line(proof: Proof, line_number: int) -> Proof:
 
 def find_uncited_lines(proof: Proof) -> list:
     """Returns a list of line numbers that were not cited in the given proof"""
-    
+
     cited_lines = set()
-    #cited_lines.add(len(proof.lines))
     for line in proof.lines:
         if not line.is_assumption() and line.assumptions:
             for i in line.assumptions:
                 cited_lines.add(i)
-    return list(set(range(len(proof.lines)-1)) - cited_lines)
+    return sorted(list(set(range(len(proof.lines)-1)) - cited_lines))[::-1]
     # Personal task
 
 def find_duplicate_lines(proof: Proof) -> list:
     """Returns a list of lists of line numbers with matching formulae"""
-    
+
     list1 = []
     list2 = []
     for i in range(len(proof.lines)):
@@ -732,19 +731,20 @@ def find_duplicate_lines(proof: Proof) -> list:
                         list2.append(j)
             if list2:
                 [list1.append(i) for i in list2]
-    return list1
+    return sorted(list1)[::-1]
     # Personal task
 
 def clean_proof(proof: Proof) -> Proof:
-    """Removes duplicate lines and unused lines, then adjusts assumption citations to match new line numbers"""
-    while find_duplicate_lines(proof) or find_uncited_lines(proof):
-        u = find_uncited_lines(proof)
-        if u:
-            proof = remove_line(proof, u[0])
-        else:
-            d = find_duplicate_lines(proof)
-            if d:
-                proof = remove_line(proof, d[0])
+    """Removes duplicate lines and unused lines, adjusting citations to match new line numbers"""
+    
+    while d := find_uncited_lines(proof):
+        for i in d:
+            proof = remove_line(proof, i)
+    
+    if u:= find_duplicate_lines(proof):
+        for i in u:
+            proof = remove_line(proof, i)
+
     assert proof.is_valid()
     return proof
     # Personal task
