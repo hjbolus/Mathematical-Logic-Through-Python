@@ -235,7 +235,7 @@ def prove_by_way_of_contradiction(proof: Proof) -> Proof:
     r = proof.statement.assumptions[-1].first
 
     proof = remove_assumption(proof)
-    proof = prove_corollary(proof, Formula('->',Formula.parse('(p->p)'),r), N)
+    proof = prove_corollary(proof, Formula('->',Formula.parse('(p->p)'), r), N)
     new_statement = InferenceRule(proof.statement.assumptions, r)
 
     n = len(proof.lines)
