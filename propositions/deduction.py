@@ -241,7 +241,7 @@ def prove_by_way_of_contradiction(proof: Proof) -> Proof:
     n = len(proof.lines)
     new_lines = list(proof.lines)
     new_lines.append(Proof.Line(Formula.parse('(p->p)'), I0, []))
-    new_lines.append(proof.Line(r, MP, [n, n-1]))
+    new_lines.append(Proof.Line(r, MP, [n, n-1]))
 
     return Proof(new_statement, proof.rules, new_lines)
     # Task 5.7
