@@ -15,6 +15,7 @@ from proofs import *
 from axiomatic_systems import *
 from deduction import *
 from operators import *
+from functools import reduce
 
 def formulas_capturing_model(model: Model) -> List[Formula]:
     """Computes the formulas that capture the given model: ``'``\ `x`\ ``'``
@@ -277,7 +278,7 @@ def encode_as_formula(rule: InferenceRule) -> Formula:
         >>> encode_as_formula(InferenceRule([], Formula('q')))
         q
     """
-    
+
     if rule.assumptions:
         new_assumptions = rule.assumptions[:-1]
         new_conclusion = Formula('->', rule.assumptions[-1], rule.conclusion)
@@ -300,23 +301,23 @@ def prove_sound_inference(rule: InferenceRule) -> Proof:
     assert is_sound_inference(rule)
     for formula in {rule.conclusion}.union(rule.assumptions):
         assert formula.operators().issubset({'->', '~'})
-    
+
     encoding = encode_as_formula(rule)
-    
+
     rules = AXIOMATIC_SYSTEM
     lines = list(prove_tautology(encoding).lines)
-    
+
     n = len(lines)
     for assumption in rule.assumptions:
         encoding = encoding.second
         lines.append(Proof.Line(assumption))
         lines.append(Proof.Line(encoding, MP, (n, n-1)))
         n += 2
-    
+
     return Proof(rule, rules, lines)
     # Task 6.4b
 
-def model_or_inconsistency(formulas: Sequence[Formula]) -> Union[Model, Proof]:
+def model_or_inconsistency(formulae: Sequence[Formula]) -> Union[Model, Proof]:
     """Either finds a model in which all the given formulas hold, or proves
     ``'~(p->p)'`` from these formulas.
 
@@ -329,50 +330,17 @@ def model_or_inconsistency(formulas: Sequence[Formula]) -> Union[Model, Proof]:
         otherwise a valid proof of ``'~(p->p)'`` from the given formulas via
         `~propositions.axiomatic_systems.AXIOMATIC_SYSTEM`.
     """
-    for formula in formulas:
+    for formula in formulae:
         assert formula.operators().issubset({'->', '~'})
+
+    variables = reduce(lambda x, y: x | y, (set(formula.variables()) for formula in formulae))
+    models = all_models(variables)
+    
+    for formula in formulae:
+        models = [model for model in models if evaluate(formula, model)]
+    
+    if models:
+        return models[0]
+    else:
+        return prove_sound_inference(InferenceRule(formulae, Formula.parse('~(p->p)')))
     # Task 6.5
-
-def prove_in_model_full(formula: Formula, model: Model) -> Proof:
-    """Either proves the given formula or proves its negation, from the formulas
-    that capture the given model.
-
-    Parameters:
-        formula: formula that contains no operators beyond ``'->'``, ``'~'``,
-            ``'&'``, and ``'|'`` (and may contain constants), whose affirmation
-            or negation is to prove.
-        model: model from whose formulas to prove.
-
-    Returns:
-        If `formula` evaluates to ``True`` in the given model, then a valid
-        proof of `formula`; otherwise a valid proof of ``'~``\ `formula`\ ``'``.
-        The returned proof is from the formulas that capture the given model, in
-        the order returned by `formulas_capturing_model`\ ``(``\ `model`\ ``)``,
-        via `~propositions.axiomatic_systems.AXIOMATIC_SYSTEM_FULL`.
-
-    Examples:
-        >>> proof = prove_in_model_full(Formula.parse('(p&q7)'),
-        ...                             {'q7': True, 'p': True})
-        >>> proof.is_valid()
-        True
-        >>> proof.statement.conclusion
-        (p&q7)
-        >>> proof.statement.assumptions
-        (p, q7)
-        >>> proof.rules == AXIOMATIC_SYSTEM_FULL
-        True
-
-        >>> proof = prove_in_model_full(Formula.parse('(p&q7)'),
-        ...                             {'q7': False, 'p': True})
-        >>> proof.is_valid()
-        True
-        >>> proof.statement.conclusion
-        ~(p&q7)
-        >>> proof.statement.assumptions
-        (p, ~q7)
-        >>> proof.rules == AXIOMATIC_SYSTEM_FULL
-        True
-    """
-    assert formula.operators().issubset({'T', 'F', '->', '~', '&', '|'})
-    assert is_model(model)
-    # Optional Task 6.6
