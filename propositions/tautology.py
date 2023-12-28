@@ -303,18 +303,17 @@ def prove_sound_inference(rule: InferenceRule) -> Proof:
     
     encoding = encode_as_formula(rule)
     
-    statement = rule
     rules = AXIOMATIC_SYSTEM
     lines = list(prove_tautology(encoding).lines)
     
     n = len(lines)
-    for assumption in statement.assumptions:
+    for assumption in rule.assumptions:
         encoding = encoding.second
         lines.append(Proof.Line(assumption))
         lines.append(Proof.Line(encoding, MP, (n, n-1)))
         n += 2
     
-    return Proof(statement, rules, lines)
+    return Proof(rule, rules, lines)
     # Task 6.4b
 
 def model_or_inconsistency(formulas: Sequence[Formula]) -> Union[Model, Proof]:
