@@ -7,13 +7,11 @@
 """Semantic analysis of propositional-logic constructs."""
 
 from typing import AbstractSet, Iterable, Iterator, Mapping, Sequence, Tuple
-
 from syntax import *
 from proofs import *
 from itertools import *
 
-#: A model for propositional-logic formulas, a mapping from variable names to
-#: truth values.
+#: A model for propositional-logic formulas, a mapping from variable names to truth values.
 Model = Mapping[str, bool]
 
 def is_model(model: Model) -> bool:
@@ -336,13 +334,13 @@ def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
     return formula
     # Optional Task 2.9
 
-def conjoin_formulae(formulae: Iterable[Formula]) -> Formula:
+def combine_formulae(formulae: Iterable[Formula], operator: str) -> Formula:
     if len(formulae) == 0:
         return formulae
     elif len(formulae) == 1:
         return formulae[0]
     else:
-        return Formula('&', formulae[0], conjoin_formulae(formulae[1:]))
+        return Formula(operator, formulae[0], combine_formulae(formulae[1:], operator))
     # Personal task
 
 def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
@@ -367,7 +365,7 @@ def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
     """
     assert is_model(model)
     if rule.assumptions:
-        formula = Formula('->', conjoin_formulae(rule.assumptions), rule.conclusion)
+        formula = Formula('->', combine_formulae(rule.assumptions, '&'), rule.conclusion)
     else:
         formula = rule.conclusion
     return evaluate(formula, model)
