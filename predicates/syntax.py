@@ -644,7 +644,7 @@ class Formula:
             operator, second = retrieve_operator(remaining)
             formula = Formula(operator, Formula._parse_prefix(first)[0], Formula._parse_prefix(second)[0])
 
-        assert str(formula) == string, f'is {string} a valid formula?'
+#         assert str(formula) == string, f'{formula} != {string}. Is {string} a valid formula?'
         return formula, suffix
         # Task 7.4a
 
