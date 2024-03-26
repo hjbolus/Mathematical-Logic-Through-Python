@@ -296,12 +296,24 @@ class Term:
         return Term._parse_prefix(string)[0]
         # Task 7.3b
 
-    def constants(self) -> Set[str]:
+        def constants(self) -> Set[str]:
         """Finds all constant names in the current term.
 
         Returns:
             A set of all constant names used in the current term.
         """
+        root = self.root
+        if is_constant(root):
+            return {root}
+
+        elif is_variable(root):
+            return set()
+
+        elif is_function(root):
+            constants = set()
+            for argument in self.arguments:
+                constants = constants | Term.constants(argument)
+            return constants
         # Task 7.5a
 
     def variables(self) -> Set[str]:
@@ -310,6 +322,18 @@ class Term:
         Returns:
             A set of all variable names used in the current term.
         """
+        root = self.root
+        if is_variable(root):
+            return {root}
+
+        elif is_constant(root):
+            return set()
+
+        elif is_function(root):
+            variables = set()
+            for argument in self.arguments:
+                variables = variables | Term.variables(argument)
+            return variables
         # Task 7.5b
 
     def functions(self) -> Set[Tuple[str, int]]:
@@ -320,6 +344,13 @@ class Term:
             A set of pairs of function name and arity (number of arguments) for
             all function names used in the current term.
         """
+        root = self.root
+        functions = set()
+        if is_function(root):
+            functions = functions | {(root, len(self.arguments))}
+            for argument in self.arguments:
+                functions = functions | Term.functions(argument)
+        return functions
         # Task 7.5c
 
     def substitute(self, substitution_map: Mapping[str, Term],
