@@ -310,7 +310,10 @@ class Term:
             return set()
 
         elif is_function(root):
-            return reduce(lambda x, y: x|Term.constants(y), self.arguments, set())
+            constants = set()
+            for argument in self.arguments:
+                constants = constants | Term.constants(argument)
+            return constants
         # Task 7.5a
 
     def variables(self) -> Set[str]:
@@ -327,8 +330,10 @@ class Term:
             return set()
 
         elif is_function(root):
-
-            return reduce(lambda x, y: x|Term.variables(y), self.arguments, set())
+            variables = set()
+            for argument in self.arguments:
+                variables = variables | Term.variables(argument)
+            return variables
         # Task 7.5b
 
     def functions(self) -> Set[Tuple[str, int]]:
@@ -343,7 +348,8 @@ class Term:
         functions = set()
         if is_function(root):
             functions = functions | {(root, len(self.arguments))}
-            return reduce(lambda x, y: x|Term.functions(y), self.arguments, functions)
+            for argument in self.arguments:
+                functions = functions | Term.functions(argument)
         return functions
         # Task 7.5c
 
@@ -669,7 +675,10 @@ class Formula:
             return Formula.constants(self.first) | Formula.constants(self.second)
 
         elif is_equality(root) or is_relation(root):
-            return reduce(lambda x, y: x|Term.constants(y), self.arguments, set())
+            constants = set()
+            for argument in self.arguments:
+                constants = constants | Term.constants(argument)
+            return constants
         # Task 7.6a
 
     def variables(self) -> Set[str]:
@@ -689,7 +698,10 @@ class Formula:
             return Formula.variables(self.first) | Formula.variables(self.second)
 
         elif is_equality(root) or is_relation(root):
-            return reduce(lambda x, y: x|Term.variables(y), self.arguments, set())
+            variables = set()
+            for argument in self.arguments:
+                variables = variables | Term.variables(argument)
+            return variables
         # Task 7.6b
 
     def free_variables(self) -> Set[str]:
@@ -711,7 +723,10 @@ class Formula:
             return Formula.free_variables(self.first) | Formula.free_variables(self.second)
 
         elif is_equality(root) or is_relation(root):
-            return reduce(lambda x, y: x|Term.variables(y), self.arguments, set())
+            free_variables = set()
+            for argument in self.arguments:
+                free_variables = free_variables | Term.variables(argument)
+            return free_variables
         # Task 7.6c
         
 
@@ -734,7 +749,10 @@ class Formula:
             return Formula.functions(self.first) | Formula.functions(self.second)
 
         elif is_equality(root) or is_relation(root):
-            return reduce(lambda x, y: x|Term.functions(y), self.arguments, set())
+            functions = set()
+            for argument in self.arguments:
+                functions = functions | Term.functions(argument)
+            return functions
         # Task 7.6d
 
     def relations(self) -> Set[Tuple[str, int]]:
