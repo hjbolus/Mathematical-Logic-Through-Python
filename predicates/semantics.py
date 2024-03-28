@@ -222,16 +222,6 @@ class Model(Generic[T]):
                 return any(truth_values)
         # Task 7.8
 
-    def find_assignments(self, formula: Formula, assignment: Mapping[str, T] = frozendict(), value: bool = True) -> Set[Formula]:
-        assert is_quantifier(formula.root), print(f'{formula} is not quantified')
-        variable = formula.variable
-        new_assignments = ({variable:value} for value in self.universe)
-        truth_values = (({**assignment, **new_assignment}, self.evaluate_formula(formula.statement, {**assignment, **new_assignment})) for new_assignment in new_assignments)
-        if value:
-            return [i[0] for i in truth_values if i[1]]
-        else:
-            return [i[0] for i in truth_values if not i[1]] #only gets the first assignment
-
     def is_model_of(self, formulas: AbstractSet[Formula]) -> bool:
         """Checks if the current model is a model of the given formulas.
 
