@@ -68,7 +68,7 @@ class Model(Generic[T]):
                 that the function is to output given these arguments.
         """
         for constant in constant_interpretations:
-            assert is_constant(constant)
+            assert is_constant(constant), print(f'{constant} is not a valid constant name')
             assert constant_interpretations[constant] in universe, print(f'the constant {constant_interpretations[constant]} is not in the domain')
         relation_arities = {}
         for relation in relation_interpretations:
@@ -175,7 +175,7 @@ class Model(Generic[T]):
             given assignment of values to free occurrences of variable names.
         """
         assert formula.constants().issubset(self.constant_interpretations.keys())
-        assert formula.free_variables().issubset(assignment.keys()), print(f'formula.free_variables() is {formula.free_variables()}, assignment.keys() is {assignment.keys()}')
+        assert formula.free_variables().issubset(assignment.keys()), print(f'in the formula {formula}, formula.free_variables() is {formula.free_variables()}, assignment.keys() is {assignment.keys()}')
         for function,arity in formula.functions():
             assert function in self.function_interpretations and \
                    self.function_arities[function] == arity
@@ -213,17 +213,24 @@ class Model(Generic[T]):
                 return self.evaluate_formula(formula.first, assignment) == self.evaluate_formula(formula.second, assignment)
 
         elif is_quantifier(root):
-            
-            #Range over assignments to only the single quantified variable at each step.
             variable = formula.variable
             new_assignments = ({variable:value} for value in self.universe)
             truth_values = (self.evaluate_formula(formula.statement, {**assignment, **new_assignment}) for new_assignment in new_assignments)
-            
             if root == 'A':
                 return all(truth_values)
             else:
                 return any(truth_values)
         # Task 7.8
+
+    def find_assignments(self, formula: Formula, assignment: Mapping[str, T] = frozendict(), value: bool = True) -> Set[Formula]:
+        assert is_quantifier(formula.root), print(f'{formula} is not quantified')
+        variable = formula.variable
+        new_assignments = ({variable:value} for value in self.universe)
+        truth_values = (({**assignment, **new_assignment}, self.evaluate_formula(formula.statement, {**assignment, **new_assignment})) for new_assignment in new_assignments)
+        if value:
+            return [i[0] for i in truth_values if i[1]]
+        else:
+            return [i[0] for i in truth_values if not i[1]] #only gets the first assignment
 
     def is_model_of(self, formulas: AbstractSet[Formula]) -> bool:
         """Checks if the current model is a model of the given formulas.
@@ -247,4 +254,13 @@ class Model(Generic[T]):
             for relation,arity in formula.relations():
                 assert relation in self.relation_interpretations and \
                        self.relation_arities[relation] in {-1, arity}
+        new_formulas = set()
+        for formula in formulas:
+            for free_variable in formula.free_variables():
+                formula = Formula('A', free_variable, formula)
+            new_formulas.add(formula)
+        if all(self.evaluate_formula(formula) for formula in new_formulas):
+            return True
+        else:
+            return False
         # Task 7.9
