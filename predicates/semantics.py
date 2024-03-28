@@ -69,10 +69,10 @@ class Model(Generic[T]):
         """
         for constant in constant_interpretations:
             assert is_constant(constant)
-            assert constant_interpretations[constant] in universe
+            assert constant_interpretations[constant] in universe, print(f'the constant {constant_interpretations[constant]} is not in the domain')
         relation_arities = {}
         for relation in relation_interpretations:
-            assert is_relation(relation)
+            assert is_relation(relation), print(f'{relation} is not a valid relation')
             relation_interpretation = relation_interpretations[relation]
             if len(relation_interpretation) == 0:
                 arity = -1 # any
@@ -86,7 +86,7 @@ class Model(Generic[T]):
             relation_arities[relation] = arity
         function_arities = {}
         for function in function_interpretations:
-            assert is_function(function)
+            assert is_function(function), print(f'{function} is not a valid function. Function names must begin with a lowercase letter f-t and must be alphanumeric.')
             function_interpretation = function_interpretations[function]
             assert len(function_interpretation) > 0
             some_argument = next(iter(function_interpretation))
@@ -213,14 +213,17 @@ class Model(Generic[T]):
                 return self.evaluate_formula(formula.first, assignment) == self.evaluate_formula(formula.second, assignment)
 
         elif is_quantifier(root):
-            all_models = product(self.universe, repeat=len(formula.statement.free_variables()))
-            free_variables = formula.statement.free_variables()
-            truth_values = (self.evaluate_formula(formula.statement, dict(zip(free_variables, model))) for model in all_models)
+            
+            #Range over assignments to only the single quantified variable at each step.
+            variable = formula.variable
+            new_assignments = ({variable:value} for value in self.universe)
+            truth_values = (self.evaluate_formula(formula.statement, {**assignment, **new_assignment}) for new_assignment in new_assignments)
+            
             if root == 'A':
                 return all(truth_values)
             else:
                 return any(truth_values)
-                        # Task 7.8
+        # Task 7.8
 
     def is_model_of(self, formulas: AbstractSet[Formula]) -> bool:
         """Checks if the current model is a model of the given formulas.
