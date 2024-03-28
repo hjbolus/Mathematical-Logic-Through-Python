@@ -249,8 +249,5 @@ class Model(Generic[T]):
             for free_variable in formula.free_variables():
                 formula = Formula('A', free_variable, formula)
             new_formulas.add(formula)
-        if all(self.evaluate_formula(formula) for formula in new_formulas):
-            return True
-        else:
-            return False
+        return all(self.evaluate_formula(formula) for formula in new_formulas)
         # Task 7.9
