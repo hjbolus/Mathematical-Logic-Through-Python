@@ -592,7 +592,7 @@ def parse_inference_rule(text:str) -> InferenceRule:
     # Personal task
 
 def parse_proof(text: list[str]) -> Proof:
-    """Converts a copied-and-pasted string from a proof object, with triple quotes added to the start and end , into a Proof object"""
+    """Converts a copied-and-pasted string from a proof object, with triple quotes added to the start and end, into a Proof object"""
 
     text = text.split('\n')
 
