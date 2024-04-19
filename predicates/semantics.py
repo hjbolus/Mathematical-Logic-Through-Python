@@ -9,6 +9,8 @@
 from typing import AbstractSet, FrozenSet, Generic, Mapping, Tuple, TypeVar
 from logic_utils import frozen, frozendict
 from itertools import product
+from numba import jit
+from datetime import datetime
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from predicates.syntax import *
@@ -110,7 +112,10 @@ class Model(Generic[T]):
         self.function_interpretations = \
             frozendict({function: frozendict(function_interpretations[function])
                         for function in function_interpretations})
-                     
+        self.max_cache_size = 1
+        self.formula_cache = {}
+
+
     def __repr__(self) -> str:
         """Computes a string representation of the current model.
 
@@ -126,7 +131,7 @@ class Model(Generic[T]):
                 str(self.function_interpretations)
                 if len(self.function_interpretations) > 0 else '')
 
-        def evaluate_term(self, term: Term,
+    def evaluate_term(self, term: Term,
                       assignment: Mapping[str, T] = frozendict()) -> T:
         """Calculates the value of the given term in the current model under the
         given assignment of values to variable names.
@@ -170,6 +175,13 @@ class Model(Generic[T]):
             assert relation in self.relation_interpretations and \
                    self.relation_arities[relation] in {-1, arity}
         
+        key = (formula, frozenset(assignment.items()))
+        cache = self.formula_cache
+        if key in cache:
+            return cache[key]
+        if len(cache) > self.max_cache_size:
+            cache.pop(next(iter(cache)))
+            
         root = formula.root
         if is_equality(root):
             result = self.evaluate_term(formula.arguments[0], assignment) == self.evaluate_term(formula.arguments[1], assignment)
@@ -205,8 +217,22 @@ class Model(Generic[T]):
             else:
                 result = any(truth_values)
                 
+        cache[key] = result
         return result
         # Task 7.8
+
+    def find_assignments(self, formula: Formula, assignment: Mapping[str, T] = frozendict(), value: bool = True) -> Set[Formula]:
+        """Returns a generator object of assignments for which the formula is true in the model"""
+        
+        assert is_quantifier(formula.root), print(f'{formula} is not quantified')
+        variable = formula.variable
+        new_assignments = ({variable:value} for value in self.universe)
+        truth_values = (({**assignment, **new_assignment}, self.evaluate_formula(formula.statement, {**assignment, **new_assignment})) for new_assignment in new_assignments)
+        if value:
+            return [i[0] for i in truth_values if i[1]]
+        else:
+            return [i[0] for i in truth_values if not i[1]] #only gets the first assignment
+        # Personal task
 
     def is_model_of(self, formulas: AbstractSet[Formula]) -> bool:
         """Checks if the current model is a model of the given formulas.
