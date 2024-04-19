@@ -112,7 +112,7 @@ class Model(Generic[T]):
         self.function_interpretations = \
             frozendict({function: frozendict(function_interpretations[function])
                         for function in function_interpretations})
-        self.max_cache_size = 1
+        self.max_cache_size = 100
         self.formula_cache = {}
 
 
