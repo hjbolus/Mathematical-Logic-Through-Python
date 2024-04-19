@@ -110,7 +110,7 @@ class Model(Generic[T]):
         self.function_interpretations = \
             frozendict({function: frozendict(function_interpretations[function])
                         for function in function_interpretations})
-
+                     
     def __repr__(self) -> str:
         """Computes a string representation of the current model.
 
@@ -126,7 +126,7 @@ class Model(Generic[T]):
                 str(self.function_interpretations)
                 if len(self.function_interpretations) > 0 else '')
 
-    def evaluate_term(self, term: Term,
+        def evaluate_term(self, term: Term,
                       assignment: Mapping[str, T] = frozendict()) -> T:
         """Calculates the value of the given term in the current model under the
         given assignment of values to variable names.
@@ -146,22 +146,20 @@ class Model(Generic[T]):
         assert term.variables().issubset(assignment.keys()), print(f'variables in term are {term.variables()}, assignment includes {assignment.keys()}')
         for function,arity in term.functions():
             assert function in self.function_interpretations and self.function_arities[function] == arity
+        
         root = term.root
         if is_constant(root):
-            return self.constant_interpretations[root]
+            result = self.constant_interpretations[root]
         elif is_variable(root):
-            return assignment[root]
+            result = assignment[root]
         elif is_function(root):
-            return self.function_interpretations[root][tuple(self.evaluate_term(argument, assignment) for argument in term.arguments)]
-#             return model.function_interpretations[root][tuple(map(lambda x: self.evaluate_term(x, assignment), term.arguments))]
+            result = self.function_interpretations[root][tuple(self.evaluate_term(argument, assignment) for argument in term.arguments)]
+        
+        return result
         # Task 7.7
-
+        
     def evaluate_formula(self, formula: Formula,
                          assignment: Mapping[str, T] = frozendict()) -> bool:
-        key = (formula, frozenset(assignment.items()))
-        if key in self.cache:
-            return self.cache[key]
-
         assert formula.constants().issubset(self.constant_interpretations.keys())
         assert formula.free_variables().issubset(assignment.keys()), \
             f'in the formula {formula}, formula.free_variables() is {formula.free_variables()}, assignment.keys() is {assignment.keys()}'
@@ -171,7 +169,7 @@ class Model(Generic[T]):
         for relation, arity in formula.relations():
             assert relation in self.relation_interpretations and \
                    self.relation_arities[relation] in {-1, arity}
-
+        
         root = formula.root
         if is_equality(root):
             result = self.evaluate_term(formula.arguments[0], assignment) == self.evaluate_term(formula.arguments[1], assignment)
@@ -206,8 +204,7 @@ class Model(Generic[T]):
                 result = all(truth_values)
             else:
                 result = any(truth_values)
-
-        self.cache[key] = result
+                
         return result
         # Task 7.8
 
