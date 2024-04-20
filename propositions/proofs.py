@@ -415,9 +415,17 @@ class Proof:
 
         else:
             rule_was_given = any(line.rule == rule for rule in self.rules)
-            rule_matches_line = Proof.rule_for_line(self, line_number).is_specialization_of(line.rule)
+            rule_matches_line = Proof.rule_for_line(self, line_number).is_specialization_of(line.rule) or Proof.rule_for_line(self, line_number) == line.rule
             assumptions_are_prior = all(assumption < line_number for assumption in line.assumptions)
             assumptions_match_line = all(i == j for i,j in zip([self.lines[k].formula for k in line.assumptions], Proof.rule_for_line(self, line_number).assumptions))
+            if not rule_was_given:
+                print(f'rule was not given: {line}')
+            if not rule_matches_line:
+                print(f'rule does not match formula: {line}')
+            if not assumptions_are_prior:
+                print(f'assumptions are not found on prior lines: {line}')
+            if not assumptions_match_line:
+                print(f'assumptions do not match formula: {line}')
             return rule_was_given and rule_matches_line and assumptions_are_prior and assumptions_match_line
         # Task 4.6b
 
@@ -592,7 +600,7 @@ def parse_inference_rule(text:str) -> InferenceRule:
     # Personal task
 
 def parse_proof(text: list[str]) -> Proof:
-    """Converts a copied-and-pasted string from a proof object, with triple quotes added to the start and end, into a Proof object"""
+    """Converts a copied-and-pasted string from a proof object, with triple quotes added to the start and end , into a Proof object"""
 
     text = text.split('\n')
 
@@ -656,18 +664,6 @@ def proof_to_code(proof: Proof) -> str:
     return text + statement + rules + lines
     # Personal task
 
-def find_citation_tree(proof: Proof, line_number: int) -> list:
-    """Returns a list of numbers representing lines that cite the given line"""
-
-    line_list = []
-    for i in range(len(proof.lines)):
-        line = proof.lines[i]
-        if not line.is_assumption():
-            if line_number in line.assumptions:
-                line_list.append(i)
-    return line_list
-    # Personal task
-
 def find_first_instance_of_formula(proof: Proof, formula: Formula) -> int:
     """Returns the line number of the first line containing the given formula"""
 
@@ -701,6 +697,18 @@ def remove_line(proof: Proof, line_number: int) -> Proof:
     return new_proof
     # Personal task
 
+# def find_citation_tree(proof: Proof, line_number: int) -> list:
+#     """Returns a list of numbers representing lines that cite the given line"""
+
+#     line_list = []
+#     for i in range(len(proof.lines)):
+#         line = proof.lines[i]
+#         if not line.is_assumption():
+#             if line_number in line.assumptions:
+#                 line_list.append(i)
+#     return line_list
+    # Personal task
+    
 def find_citation_tree(proof: Proof, line_number: int) -> set:
     """Traces citations back from the conclusion, finding all lines which are actually used to prove the conclusion.
     Returns them as a set."""
