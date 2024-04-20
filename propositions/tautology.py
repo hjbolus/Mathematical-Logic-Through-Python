@@ -89,8 +89,9 @@ def prove_in_model(formula: Formula, model:Model) -> Proof:
 
     assumptions = formulas_capturing_model(model)
     rules = AXIOMATIC_SYSTEM
-
-    if is_variable(formula.root):
+    root = formula.root
+    
+    if is_variable(root):
         if evaluate(formula, model):
             conclusion = formula
         else:
@@ -101,7 +102,7 @@ def prove_in_model(formula: Formula, model:Model) -> Proof:
         proof = Proof(statement, rules, line)
         return proof
 
-    elif formula.root == '~':
+    elif root == '~':
         if evaluate(formula, model):
             return prove_in_model(formula.first, model)
         else:
@@ -110,25 +111,23 @@ def prove_in_model(formula: Formula, model:Model) -> Proof:
             conditional = NN
             return prove_corollary(proof, consequent, conditional)
 
-    else:
-        assert formula.root == '->'
+    elif root == '->':
         if evaluate(formula, model):
             if not evaluate(formula.first, model):
-                notx = prove_in_model(Formula('~', formula.first), model)
-                return prove_corollary(notx, I2.specialize({'p': formula.first, 'q': formula.second}).conclusion.second, I2)
+                proof = prove_in_model(Formula('~', formula.first), model)
+                consequent = I2.specialize({'p': formula.first, 'q': formula.second}).conclusion.second
+                conditional = I2
+                return prove_corollary(proof, consequent, conditional)
 
             else:
-                assert evaluate(formula.second, model)
-                y = prove_in_model(formula.second, model)
-                return prove_corollary(y, I1.specialize({'p': formula.first, 'q': formula.second}).conclusion.second, I1)
+                proof = prove_in_model(formula.second, model)
+                consequent = I1.specialize({'p': formula.first, 'q': formula.second}).conclusion.second
+                conditional = I1
+                return prove_corollary(proof, consequent, conditional)
 
         else:
-            first = formula.first
-            proof1 = prove_in_model(first, model)
-
-            second = Formula('~', formula.second)
-            proof2 = prove_in_model(second, model)
-
+            proof1 = prove_in_model(formula.first, model)
+            proof2 = prove_in_model(Formula('~', formula.second), model)
             consequent = Formula('~', formula)
             return combine_proofs(proof1, proof2, consequent, NI)
     # Task 6.1b
@@ -335,12 +334,152 @@ def model_or_inconsistency(formulae: Sequence[Formula]) -> Union[Model, Proof]:
 
     variables = reduce(lambda x, y: x | y, (set(formula.variables()) for formula in formulae))
     models = all_models(variables)
-    
+
     for formula in formulae:
         models = [model for model in models if evaluate(formula, model)]
-    
+
     if models:
         return models[0]
     else:
         return prove_sound_inference(InferenceRule(formulae, Formula.parse('~(p->p)')))
     # Task 6.5
+
+def prove_in_model_full(formula: Formula, model: Model) -> Proof:
+    """Either proves the given formula or proves its negation, from the formulas
+    that capture the given model.
+
+    Parameters:
+        formula: formula that contains no operators beyond ``'->'``, ``'~'``,
+            ``'&'``, and ``'|'`` (and may contain constants), whose affirmation
+            or negation is to prove.
+        model: model from whose formulas to prove.
+
+    Returns:
+        If `formula` evaluates to ``True`` in the given model, then a valid
+        proof of `formula`; otherwise a valid proof of ``'~``\ `formula`\ ``'``.
+        The returned proof is from the formulas that capture the given model, in
+        the order returned by `formulas_capturing_model`\ ``(``\ `model`\ ``)``,
+        via `~propositions.axiomatic_systems.AXIOMATIC_SYSTEM_FULL`.
+
+    Examples:
+        >>> proof = prove_in_model_full(Formula.parse('(p&q7)'),
+        ...                             {'q7': True, 'p': True})
+        >>> proof.is_valid()
+        True
+        >>> proof.statement.conclusion
+        (p&q7)
+        >>> proof.statement.assumptions
+        (p, q7)
+        >>> proof.rules == AXIOMATIC_SYSTEM_FULL
+        True
+
+        >>> proof = prove_in_model_full(Formula.parse('(p&q7)'),
+        ...                             {'q7': False, 'p': True})
+        >>> proof.is_valid()
+        True
+        >>> proof.statement.conclusion
+        ~(p&q7)
+        >>> proof.statement.assumptions
+        (p, ~q7)
+        >>> proof.rules == AXIOMATIC_SYSTEM_FULL
+        True
+    """
+    assert formula.operators().issubset({'T', 'F', '->', '~', '&', '|'})
+    assert is_model(model)
+    
+    assumptions = formulas_capturing_model(model)
+    rules = AXIOMATIC_SYSTEM_FULL
+    root = formula.root
+    
+    if is_variable(root):
+        if evaluate(formula, model):
+            conclusion = formula
+        else:
+            conclusion = Formula('~', formula)
+
+        line = [Proof.Line(conclusion)]
+        statement = InferenceRule(assumptions, conclusion)
+        proof = Proof(statement, rules, line)
+        return proof
+
+    elif root == '~':
+        if evaluate(formula, model):
+            return prove_in_model_full(formula.first, model)
+        else:
+            proof = prove_in_model_full(formula.first, model)
+            consequent = Formula('~', formula)
+            conditional = NN
+            return prove_corollary(proof, consequent, conditional)
+
+    elif root == '->':
+        if evaluate(formula, model):
+            if not evaluate(formula.first, model):
+                proof = prove_in_model_full(Formula('~', formula.first), model)
+                consequent = I2.specialize({'p': formula.first, 'q': formula.second}).conclusion.second
+                conditional = I2
+                return prove_corollary(proof, consequent, conditional)
+
+            else:
+                proof = prove_in_model_full(formula.second, model)
+                consequent = I1.specialize({'p': formula.first, 'q': formula.second}).conclusion.second
+                conditional = I1
+                return prove_corollary(proof, consequent, conditional)
+
+        else:
+            proof1 = prove_in_model_full(formula.first, model)
+            proof2 = prove_in_model_full(Formula('~', formula.second), model)
+            consequent = Formula('~', formula)
+            return combine_proofs(proof1, proof2, consequent, NI)
+    
+    elif root == '&':
+        if evaluate(formula, model):
+            proof1 = prove_in_model_full(formula.first, model)
+            proof2 = prove_in_model_full(formula.second, model)
+            consequent = formula
+            double_conditional = A
+            return combine_proofs(proof1, proof2, consequent, double_conditional)
+            
+        else:
+            if evaluate(formula.first, model):
+                proof = prove_in_model_full(Formula('~', formula.second), model)
+                consequent = Formula('~', formula)
+                conditional = NA1
+                return prove_corollary(proof, consequent, conditional)
+                
+            else:
+                proof = prove_in_model_full(Formula('~', formula.first), model)
+                consequent = Formula('~', formula)
+                conditional = NA2
+                return prove_corollary(proof, consequent, conditional)
+    
+    elif root == '|':
+        if evaluate(formula, model):
+            if evaluate(formula.first, model):
+                proof = prove_in_model_full(formula.first, model)
+                consequent = formula
+                conditional = O2
+                return prove_corollary(proof, consequent, conditional)
+                
+            else:
+                proof = prove_in_model_full(formula.second, model)
+                consequent = formula
+                conditional = O1
+                return prove_corollary(proof, consequent, conditional)
+        else:
+            proof1 = prove_in_model_full(Formula('~', formula.first), model)
+            proof2 = prove_in_model_full(Formula('~', formula.second), model)
+            consequent = Formula('~', formula)
+            double_conditional = NO
+            return combine_proofs(proof1, proof2, consequent, double_conditional)
+            
+    elif root == 'T':
+        line = [Proof.Line(formula, T, ())]
+        statement = T
+        return Proof(statement, rules, line)
+    
+    else:
+        assert root == 'F'
+        line = [Proof.Line(Formula('~', formula), NF, ())]
+        statement = NF
+        return Proof(statement, rules, line)
+    # Optional Task 6.6
