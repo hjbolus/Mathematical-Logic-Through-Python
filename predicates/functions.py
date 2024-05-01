@@ -173,6 +173,39 @@ def replace_functions_with_relations_in_formula(formula: Formula) -> Formula:
                     {relation for relation,arity in formula.relations()})) == 0
     for variable in formula.variables():
         assert not is_z_and_number(variable)
+    
+    root = formula.root
+    
+    if is_relation(root) or is_equality(root):
+        pile = []
+        new_arguments = []
+        for argument in formula.arguments:
+            if is_function(argument.root):
+                pile.append(_compile_term(argument))
+                new_arguments.append(pile[-1][-1].arguments[0])
+            else:
+                new_arguments.append(argument)
+        new_formula = Formula(formula.root, new_arguments)
+        
+        for compiled_formula in pile[::-1]:
+            for step in compiled_formula[::-1]:
+                new_relation = Formula(function_name_to_relation_name(step.arguments[1].root), 
+                                        [step.arguments[0], *step.arguments[1].arguments])
+                new_formula = Formula('E', str(step.arguments[0]), 
+                                        Formula('&', new_relation, new_formula))
+
+    elif is_binary(root):
+        new_formula = Formula(formula.root,
+                                replace_functions_with_relations_in_formula(formula.first),
+                                replace_functions_with_relations_in_formula(formula.second))
+    elif is_unary(root):
+        new_formula = Formula(formula.root,
+                                replace_functions_with_relations_in_formula(formula.first))
+    else:
+        new_formula = Formula(formula.root,
+                                formula.variable,
+                                replace_functions_with_relations_in_formula(formula.statement))
+    return new_formula
     # Task 8.4
 
 def replace_functions_with_relations_in_formulas(formulas:
