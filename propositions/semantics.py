@@ -128,7 +128,7 @@ def truth_values(formula: Formula, models: Iterable[Model]) -> Iterable[bool]:
         >>> list(truth_values(Formula.parse('~(p&q76)'), all_models(['p', 'q76'])))
         [True, True, True, False]
     """
-    return [evaluate(formula, model) for model in models]
+    return (evaluate(formula, model) for model in models)
     # Task 2.3
 
 def print_truth_table(formula: Formula) -> None:
@@ -166,7 +166,7 @@ def is_tautology(formula: Formula) -> bool:
     Returns:
         ``True`` if the given formula is a tautology, ``False`` otherwise.
     """
-    return True if all(truth_values(formula,tuple(all_models(Formula.variables(formula))))) else False
+    return all(truth_values(formula,all_models(Formula.variables(formula))))
     # Task 2.5a
 
 def is_contradiction(formula: Formula) -> bool:
@@ -178,7 +178,7 @@ def is_contradiction(formula: Formula) -> bool:
     Returns:
         ``True`` if the given formula is a contradiction, ``False`` otherwise.
     """
-    return True if not any(truth_values(formula,tuple(all_models(Formula.variables(formula))))) else False
+    return not any(truth_values(formula,all_models(Formula.variables(formula))))
     # Task 2.5b
 
 def is_satisfiable(formula: Formula) -> bool:
@@ -190,7 +190,7 @@ def is_satisfiable(formula: Formula) -> bool:
     Returns:
         ``True`` if the given formula is satisfiable, ``False`` otherwise.
     """
-    return True if any(truth_values(formula,tuple(all_models(Formula.variables(formula))))) else False
+    return any(truth_values(formula,all_models(Formula.variables(formula))))
     # Task 2.5c
 
 def _synthesize_for_model(model: Model) -> Formula:
