@@ -575,7 +575,7 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
         rules allowed in the two given proofs but without the "lemma" rule
         proved by `lemma_proof`.
     """
-    assert main_proof.is_valid(), print('\n******************** invalid proof ********************\n', main_proof, '\n***************************************************\n')
+    assert main_proof.is_valid()
     assert lemma_proof.is_valid()
 
     new_rules = set(rule for rule in main_proof.rules if rule != lemma_proof.statement).union(lemma_proof.rules)
