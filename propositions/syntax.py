@@ -386,11 +386,10 @@ class Formula:
             assert is_variable(variable)
             if self == Formula(variable):
                 return substitution_map[variable]
-            elif 'first' in dir(self):
-                if is_unary(self.root):
-                    return Formula(self.root, Formula.substitute_variables(self.first, substitution_map))
-                elif 'second' in dir(self):
-                    return Formula(self.root, Formula.substitute_variables(self.first, substitution_map), Formula.substitute_variables(self.second, substitution_map))
+            elif is_unary(self.root):
+                return Formula(self.root, Formula.substitute_variables(self.first, substitution_map))
+            elif is_binary(self.root):
+                return Formula(self.root, Formula.substitute_variables(self.first, substitution_map), Formula.substitute_variables(self.second, substitution_map))
         return self
         # Task 3.3
 
