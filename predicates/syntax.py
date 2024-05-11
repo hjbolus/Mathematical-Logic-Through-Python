@@ -10,12 +10,10 @@ from __future__ import annotations
 from functools import lru_cache, reduce
 from typing import AbstractSet, Mapping, Optional, Sequence, Set, Tuple, Union
 
-from logic_utils import fresh_variable_name_generator, frozen, \
-                        memoized_parameterless_method
+from logic_utils import fresh_variable_name_generator, frozen, memoized_parameterless_method
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from propositions.syntax import Formula as PropositionalFormula, is_variable as is_propositional_variable
-from datetime import datetime
 
 class ForbiddenVariableError(Exception):
     """Raised by `Term.substitute` and `Formula.substitute` when a substituted
@@ -50,7 +48,33 @@ def is_constant(string: str) -> bool:
     """
     return  (((string[0] >= '0' and string[0] <= '9') or \
               (string[0] >= 'a' and string[0] <= 'e')) and \
-             string.isalnum()) or string == '_'
+               string.isalnum()) or string == '_'
+
+def make_constant(string:str, universe:set) -> str:
+    """converts a string to a valid constant name.
+
+    Parameters:
+        string: string to convert.
+
+    Returns:
+        a string for which is_constant(string) will evaluate to True.
+    """
+    if not (string[0] >= '0' and string[0] <= '9') or \
+              (string[0] >= 'a' and string[0] <= 'e') or \
+               string[0] == '_':
+        string = '0' + string
+    if not string.isalnum():
+        string = ''.join([i if i.isalnum() else '' for i in string])
+    if string in universe:
+        i=1
+        new_string = string
+        while new_string in universe:
+            print(f'new_string is {new_string}')
+            new_string = string+str(i)
+            i+=1
+        string = new_string
+    return string
+    # Personal task
 
 @lru_cache(maxsize=100) # Cache the return value of is_variable
 def is_variable(string: str) -> bool:
@@ -105,10 +129,10 @@ def find_corresponding_bracket(string: str, position: int) -> int:
             return position
 
 def retrieve_operator(string: str) -> list:
-    if string[0] in ['&', '|']:
+    if string[0] in {'&', '|', '+'}:
         return string[0], string[1:]
     elif string[0] == '-':
-        assert string[1] == '>'
+        assert string[1] in {'>','&','|'}
         return string[0:2], string[2:]
     else:
         assert string[0:3] == '<->'
@@ -353,6 +377,9 @@ class Term:
         return functions
         # Task 7.5c
 
+    def __len__(self) -> int:
+        return len(self.variables()) + len(self.constants()) + len(self.functions())
+
     def substitute(self, substitution_map: Mapping[str, Term],
                    forbidden_variables: AbstractSet[str] = frozenset()) -> Term:
         """Substitutes in the current term, each constant name `construct` or
@@ -441,7 +468,7 @@ def is_binary(string: str) -> bool:
     Returns:
         ``True`` if the given string is a binary operator, ``False`` otherwise.
     """
-    return string == '&' or string == '|' or string == '->'
+    return string in {'&', '|', '->', '<->', '+', '-|', '-&'}
 
 @lru_cache(maxsize=100) # Cache the return value of is_quantifier
 def is_quantifier(string: str) -> bool:
@@ -728,7 +755,28 @@ class Formula:
                 free_variables = free_variables | Term.variables(argument)
             return free_variables
         # Task 7.6c
-        
+
+    def bound_variables(self) -> Set[str]:
+        """Finds all variable names that are quantified in the current formula.
+
+        Returns:
+            A set of every variable name that is used in the current formula
+            within a scope of a quantification on that variable name.
+        """
+        root = self.root
+        if is_quantifier(root):
+            return {self.variable} | self.statement.bound_variables()
+
+        elif is_unary(root):
+            return Formula.bound_variables(self.first)
+
+        elif is_binary(root):
+            return Formula.bound_variables(self.first) | Formula.bound_variables(self.second)
+
+        elif is_equality(root) or is_relation(root):
+            return set()
+
+        # Personal task
 
     def functions(self) -> Set[Tuple[str, int]]:
         """Finds all function names in the current formula, along with their
@@ -778,6 +826,28 @@ class Formula:
 
         return set()
         # Task 7.6e
+
+    def quantifiers(self) -> Set[Tuple[str, str]]:
+        """Finds all quantifiers in the current formula.
+
+        Returns:
+            A set of tuples of every quantifier with its associated variable name that is used in the current formula.
+        """
+        root = self.root
+        if is_quantifier(root):
+            return {(root, self.variable)} | self.statement.quantifiers()
+
+        elif is_unary(root):
+            return Formula.quantifiers(self.first)
+
+        elif is_binary(root):
+            return Formula.quantifiers(self.first) | Formula.quantifiers(self.second)
+
+        elif is_equality(root) or is_relation(root):
+            return set()
+
+    def __len__(self) -> int:
+        return len(self.constants()) + len(self.variables()) + len(self.quantifiers()) + len(self.functions()) + len(self.relations())
 
     def substitute(self, substitution_map: Mapping[str, Term],
                    forbidden_variables: AbstractSet[str] = frozenset()) -> \
@@ -892,3 +962,13 @@ class Formula:
         for variable in skeleton.variables():
             assert variable in substitution_map
         # Task 9.10
+
+def make_formula_of_size(size: int) -> Formula:
+    """Accepts an integer, returns a formula of the form Exi[...Ex0[(...(L(x0,x1)&...)&L(xi,xi+1))]]] up to i = size. 248 is the max size I can request before an error."""
+    assert size > 0
+    formula = Formula('L', [Term('x0'), Term('x1')])
+    for i in range(1,size):
+        formula = Formula('&', formula, Formula('L', [Term('x'+str(i)), Term('x'+str(i+1))]))
+    for i in range(size+1):
+        formula = Formula('E', 'x' + str(i), formula)
+    return formula
