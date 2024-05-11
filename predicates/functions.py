@@ -274,6 +274,25 @@ def replace_functions_with_relations_in_formulas(formulas:
     return new_formulas
     # Task 8.5
 
+def translate_equality_to_SAME(formula):
+    root = formula.root
+    if root == '=':
+        formula = Formula('SAME', formula.arguments)
+    else:
+        if is_unary(root):
+            formula = Formula(root, translate_equality_to_SAME(formula.first))
+            
+        elif is_binary(root):
+            formula = Formula(root, 
+                        translate_equality_to_SAME(formula.first),
+                        translate_equality_to_SAME(formula.second))
+                        
+        elif is_quantifier(root):
+            formula = Formula(root, formula.variable, translate_equality_to_SAME(formula.statement))
+    return formula
+    
+    #helper function for task 8.6
+
 def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
         Set[Formula]:
     """Syntactically converts the given set of formulas to a canonically
@@ -301,6 +320,52 @@ def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
         assert len(formula.functions()) == 0
         assert 'SAME' not in \
                {relation for relation,arity in formula.relations()}
+    
+    translations = [translate_equality_to_SAME(formula) for formula in formulas]
+    
+    new_formulas = [*translations,
+                    Formula.parse('Ax[SAME(x,x)]'),                                  # reflexivity
+                    Formula.parse('Ax[Ay[(SAME(x,y)<->SAME(y,x))]]'),                # symmetry
+                    Formula.parse('Ax[Ay[Az[((SAME(x,y)&SAME(y,z))->SAME(x,z))]]]')] # transitivity
+    
+    relations = set.union(*[i.relations() for i in formulas])
+    
+#   1. Make two sets of variables, each as long as the relation arity
+    variables1, variables2 = [], []
+    max_arity = max(i[1] for i in relations)
+    for i in range(max_arity*2):
+        if i%2:
+            variables2.append(Term.parse(next(fresh_variable_name_generator)))
+        else:
+            variables1.append(Term.parse(next(fresh_variable_name_generator)))
+            
+#   For every relation:
+    for relation in set.union(*[i.relations() for i in formulas]):
+        varset1 = variables1[:relation[1]]
+        varset2 = variables2[:relation[1]]
+        
+#       2. Express R(*var1) -> R(*var2)
+        relation_formula = Formula('->',
+                            Formula(relation[0], varset1),
+                            Formula(relation[0], varset2))
+            
+#       3. Pair variables and build SAME formulae for each pair
+        same_formula = None
+        for pair in zip(varset1, varset2):
+            if same_formula:
+                same_formula = Formula('&', same_formula, Formula('SAME', [pair[0],pair[1]]))
+            else:
+                same_formula = Formula('SAME', [pair[0],pair[1]])
+                
+#       4. new formula = SAME formulae -> equivalence formula
+        new_formula = Formula('->', same_formula, relation_formula)
+
+#       5. Universally quantify over each of those variables to get Ax1[...Axn[Ay1[...Ayn[((SAME(x1,y1)&...&SAME(xn,yn))->(R(x1,...xn)->R(y1,...yn)))]]]]
+        for var in varset1+varset2:
+            new_formula = Formula('A', str(var), new_formula)
+        new_formulas.append(new_formula)
+        
+    return new_formulas
     # Task 8.6
 
 def add_SAME_as_equality_in_model(model: Model[T]) -> Model[T]:
