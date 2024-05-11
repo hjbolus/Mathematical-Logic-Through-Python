@@ -534,7 +534,7 @@ class Formula:
             if is_equality(root):
                 assert len(arguments_or_first_or_variable) == 2
             assert second_or_statement is None
-            self.root, self.arguments = root, tuple(arguments_or_first_or_variable)
+            self.root, self.arguments = root, tuple(argument if isinstance(argument, Term) else Term(argument) for argument in arguments_or_first_or_variable)
 
         elif is_unary(root):
             # Populate self.first
