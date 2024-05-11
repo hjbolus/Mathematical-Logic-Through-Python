@@ -249,6 +249,29 @@ def replace_functions_with_relations_in_formulas(formulas:
     for formula in formulas:
         for variable in formula.variables():
             assert not is_z_and_number(variable)
+    
+    new_formulas = {replace_functions_with_relations_in_formula(formula) for formula in formulas}
+    
+    new_relations = set.union(*[i.relations() for i in new_formulas]) - set.union(*[i.relations() for i in formulas])
+    for relation in new_relations:
+        arguments = [Term.parse(next(fresh_variable_name_generator)) for _ in range(relation[1]+2)]
+        
+        existence_formula = Formula('E', str(arguments[0]), 
+                                Formula(relation[0], [arguments[0], *arguments[3:]]))
+        uniqueness_formula = Formula('->',
+                                Formula('&',
+                                    Formula(relation[0], [arguments[1], *arguments[3:]]),
+                                    Formula(relation[0], [arguments[2], *arguments[3:]])),
+                                Formula('=',
+                                    [arguments[1],
+                                    arguments[2]]))
+            
+        for argument in arguments[1:]:
+            existence_formula = Formula('A', str(argument), existence_formula)
+            uniqueness_formula = Formula('A', str(argument), uniqueness_formula)
+            
+        new_formulas.add(Formula('&', existence_formula, uniqueness_formula))
+    return new_formulas
     # Task 8.5
 
 def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
