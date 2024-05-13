@@ -69,7 +69,6 @@ def make_constant(string:str, universe:set) -> str:
         i=1
         new_string = string
         while new_string in universe:
-            print(f'new_string is {new_string}')
             new_string = string+str(i)
             i+=1
         string = new_string
@@ -379,6 +378,7 @@ class Term:
 
     def __len__(self) -> int:
         return len(self.variables()) + len(self.constants()) + len(self.functions())
+        # personal task
 
     def substitute(self, substitution_map: Mapping[str, Term],
                    forbidden_variables: AbstractSet[str] = frozenset()) -> Term:
@@ -419,6 +419,18 @@ class Term:
             assert is_constant(construct) or is_variable(construct)
         for variable in forbidden_variables:
             assert is_variable(variable)
+
+        if sinners:= set.union(*[value.variables() for value in substitution_map.values()]) & forbidden_variables:
+            raise ForbiddenVariableError(sinners.pop())
+
+        string = str(self)
+        if string in substitution_map:
+            term = substitution_map[string]
+        elif is_variable(string) or is_constant(string):
+            term = self
+        else:
+            term = Term(self.root, [argument.substitute(substitution_map, forbidden_variables) for argument in self.arguments])
+        return term
         # Task 9.1
 
 @lru_cache(maxsize=100) # Cache the return value of is_equality
@@ -538,13 +550,13 @@ class Formula:
 
         elif is_unary(root):
             # Populate self.first
-            assert isinstance(arguments_or_first_or_variable, Formula)
+            assert isinstance(arguments_or_first_or_variable, Formula), print(f'{arguments_or_first_or_variable} is {type(arguments_or_first_or_variable)}, should be Formula')
             assert second_or_statement is None
             self.root, self.first = root, arguments_or_first_or_variable
 
         elif is_binary(root):
             # Populate self.first and self.second
-            assert isinstance(arguments_or_first_or_variable, Formula)
+            assert isinstance(arguments_or_first_or_variable, Formula), print(f'{arguments_or_first_or_variable} is {type(arguments_or_first_or_variable)}')
             assert second_or_statement is not None
             self.root, self.first, self.second = \
                 root, arguments_or_first_or_variable, second_or_statement
@@ -845,17 +857,18 @@ class Formula:
 
         elif is_equality(root) or is_relation(root):
             return set()
+        # personal task
 
     def __len__(self) -> int:
         return len(self.constants()) + len(self.variables()) + len(self.quantifiers()) + len(self.functions()) + len(self.relations())
+        # personal task
 
     def substitute(self, substitution_map: Mapping[str, Term],
                    forbidden_variables: AbstractSet[str] = frozenset()) -> \
             Formula:
         """Substitutes in the current formula, each constant name `construct` or
         free occurrence of variable name `construct` that is a key in
-        `substitution_map` with the term
-        `substitution_map`\ ``[``\ `construct`\ ``]``.
+        `substitution_map` with the term `substitution_map[construct]`.
 
         Parameters:
             substitution_map: mapping defining the substitutions to be
@@ -897,9 +910,41 @@ class Formula:
             assert is_constant(construct) or is_variable(construct)
         for variable in forbidden_variables:
             assert is_variable(variable)
+
+        if sinners:= set.union(*[value.variables() for value in substitution_map.values()]) & forbidden_variables:
+            raise ForbiddenVariableError(sinners.pop())
+
+        if str(self) in substitution_map:
+            formula = substitution_map[string]
+
+        else:
+            root = self.root
+            if is_unary(root):
+               formula = Formula(root,
+                        self.first.substitute(substitution_map, forbidden_variables))
+
+            elif is_binary(root):
+                formula = Formula(root,
+                        self.first.substitute(substitution_map, forbidden_variables),
+                        self.second.substitute(substitution_map, forbidden_variables))
+
+            elif is_relation(root) or is_equality(root):
+                formula = Formula(root,
+                        [argument.substitute(substitution_map, forbidden_variables) for argument in self.arguments])
+
+            else:
+                forbidden_variables = set(forbidden_variables) | {self.variable}
+                new_substitution_map = {key:substitution_map[key] for key in substitution_map if not key == self.variable}
+                if new_substitution_map:
+                    formula = Formula(root,
+                            self.variable,
+                            self.statement.substitute(new_substitution_map, forbidden_variables))
+                else:
+                    formula = self
+        return formula
         # Task 9.2
 
-    def propositional_skeleton(self) -> Tuple[PropositionalFormula,
+    def propositional_skeleton(self, substitution_map=None) -> Tuple[PropositionalFormula,
                                               Mapping[str, Formula]]:
         """Computes a propositional skeleton of the current formula.
 
@@ -912,7 +957,7 @@ class Formula:
             the same propositional variable name. The propositional variable
             names used for substitution are obtained, from left to right
             (considering their first occurrence), by calling
-            `next`\ ``(``\ `~logic_utils.fresh_variable_name_generator`\ ``)``.
+            `next(~logic_utils.fresh_variable_name_generator)`.
             The second element of the pair is a mapping from each propositional
             variable name to the subformula for which it was substituted.
 
@@ -923,6 +968,36 @@ class Formula:
             >>> formula.propositional_skeleton()
             (((z4&z5)|(~z6->z5)), {'z4': Ax[x=7], 'z5': x=7, 'z6': Q(y)})
         """
+        if not substitution_map:
+            substitution_map = dict()
+        root = self.root
+        if is_unary(root):
+            first, substitution_map = self.first.propositional_skeleton(substitution_map)
+            formula = PropositionalFormula(root, first)
+
+        elif is_binary(root):
+            first, substitution_map = self.first.propositional_skeleton(substitution_map)
+            if self.second in substitution_map.values():
+                for _tuple in substitution_map.items():
+                    if self.second in _tuple:
+                        second = PropositionalFormula.parse(_tuple[0])
+                        break
+            else:
+                second, substitution_map2 = self.second.propositional_skeleton(substitution_map)
+                substitution_map.update(substitution_map2)
+            formula = PropositionalFormula(root, first, second)
+
+        elif is_relation(root) or is_equality(root) or is_quantifier(root):
+            if self in substitution_map.values():
+                for _tuple in substitution_map.items():
+                    if self in _tuple:
+                        formula = PropositionalFormula(_tuple[0])
+                        break
+            else:
+                variable = next(fresh_variable_name_generator)
+                substitution_map[variable] = self
+                formula = PropositionalFormula.parse(variable)
+        return formula, substitution_map
         # Task 9.8
 
     @staticmethod
@@ -934,8 +1009,8 @@ class Formula:
 
         Arguments:
             skeleton: propositional skeleton for the formula to compute,
-                containing no constants or operators beyond ``'~'``, ``'->'``,
-                ``'|'``, and ``'&'``.
+                containing no constants or operators beyond '~', '->',
+                '|', '&', '+', '<->', '-|', and '-&'.
             substitution_map: mapping from each propositional variable name of
                 the given propositional skeleton to a predicate-logic formula.
 
@@ -961,6 +1036,18 @@ class Formula:
             assert is_unary(operator) or is_binary(operator)
         for variable in skeleton.variables():
             assert variable in substitution_map
+
+        root = skeleton.root
+        if is_propositional_variable(root) and root in substitution_map:
+            return substitution_map[root]
+        else:
+            if is_unary(root):
+               return Formula(root, Formula.from_propositional_skeleton(skeleton.first, substitution_map))
+            elif is_binary(root):
+                return Formula(root,
+                    Formula.from_propositional_skeleton(skeleton.first, substitution_map),
+                    Formula.from_propositional_skeleton(skeleton.second, substitution_map))
+
         # Task 9.10
 
 def make_formula_of_size(size: int) -> Formula:
