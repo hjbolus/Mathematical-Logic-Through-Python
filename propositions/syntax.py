@@ -10,8 +10,6 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Mapping, Optional, Set, Tuple, Union
 from itertools import takewhile
-import sys
-sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from logic_utils import frozen, memoized_parameterless_method
 
 @lru_cache(maxsize=100) # Cache the return value of is_variable
@@ -101,7 +99,7 @@ class Formula:
 
     def __init__(self, root: str, first: Optional[Formula] = None, second: Optional[Formula] = None):
         """Initializes a `Formula` from its root and root operands.
-        
+
         Parameters:
             root: the root for the formula tree.
             first: the first operand for the root, if the root is a unary or
@@ -114,25 +112,30 @@ class Formula:
             self.root = root
         elif is_unary(root):
             assert first is not None and second is None
-            self.root, self.first = root, first
+#             self.root, self.first = root, first
+            self.root = root
+            self.first = first if isinstance(first, Formula) else Formula(first)
         else:
             assert is_binary(root)
             assert first is not None and second is not None
-            self.root, self.first, self.second = root, first, second
+#             self.root, self.first, self.second = root, first, second
+            self.root = root
+            self.first = first if isinstance(first, Formula) else Formula(first)
+            self.second = second if isinstance(second, Formula) else Formula(second)
 
     @memoized_parameterless_method
     def __repr__(self) -> str:
         """Computes the string representation of the current formula.
-        
+
         Returns:
             The standard string representation of the current formula.
         """
         if is_constant(self.root) or is_variable(self.root):
             string = self.root
-            
+
         elif is_unary(self.root):
             string = self.root + self.first.__repr__()
-            
+
         else:
             assert is_binary(self.root)
             string = '(' + self.first.__repr__() + self.root + self.second.__repr__() + ')'
@@ -141,10 +144,10 @@ class Formula:
 
     def __eq__(self, other: object) -> bool:
         """Compares the current formula with the given one.
-        
+
         Parameters:
             other: object to compare to.
-        
+
         Returns:
             ``True`` if the given object is a `Formula` object that equals the
             current formula, ``False`` otherwise.
@@ -153,10 +156,10 @@ class Formula:
 
     def __ne__(self, other: object) -> bool:
         """Compares the current formula with the given one.
-        
+
         Parameters:
             other: object to compare to.
-        
+
         Returns:
             ``True`` if the given object is not a `Formula` object or does not
             equal the current formula, ``False`` otherwise.
@@ -169,34 +172,34 @@ class Formula:
     @memoized_parameterless_method
     def variables(self) -> Set[str]:
         """Finds all variable names in the current formula.
-        
+
         Returns:
             A set of all variable names used in the current formula.
         """
         if is_variable(self.root):
             return {self.root}
-            
+
         elif is_unary(self.root):
             if is_variable(self.first):
                 first = {self.first}
             else:
                 first = self.first.variables()
-                
+
             return first
-            
+
         elif is_binary(self.root):
             if is_variable(self.first):
                 first = {self.first}
             elif not is_constant(self.first):
                 first = self.first.variables()
-                
+
             if is_variable(self.second):
                 second = {self.second}
             elif not is_constant(self.second):
                 second = self.second.variables()
-                
+
             return first | second
-            
+
         else:
             return set()
         # Task 1.2
@@ -204,7 +207,7 @@ class Formula:
     @memoized_parameterless_method
     def operators(self) -> Set[str]:
         """Finds all operators in the current formula.
-        
+
         Returns:
             A set of all operators (including ``'T'`` and ``'F'``) used in the
             current formula.
@@ -212,15 +215,15 @@ class Formula:
         operators = set()
         if not is_variable(self.root):
             operators = operators | {self.root}
-        
+
         if is_unary(self.root):
             return operators | self.first.operators()
-            
+
         elif is_binary(self.root):
             return operators | self.first.operators() | self.second.operators()
-            
+
         return operators
-            
+
         # Task 1.3
 
     @staticmethod
@@ -322,24 +325,52 @@ class Formula:
             first = self.first
             if isinstance(self.first, Formula):
                 first = Formula.polish(first)
-            
+
             return self.root + str(first)
-            
+
         elif is_binary(self.root):
             first = self.first
             if isinstance(self.first, Formula):
                 first = Formula.polish(first)
-            
+
             second = self.second
             if isinstance(self.second, Formula):
                 second = Formula.polish(second)
-            
+
             return self.root + str(first) + str(second)
-            
+
         else:
             return self.root
-
         # Optional Task 1.7
+
+    @staticmethod
+    def _parse_polish_prefix(string: str) -> Tuple[Union[Formula, None], str]:
+        """Parses a prefix of the given string in polish notation into a formula.
+
+        Parameters:
+            string: string to parse.
+
+        Returns:
+            A pair containing a formula whose polish notation representation is 
+            the given string and the unparsed suffix of the string.
+        """
+        prefix, suffix = split_str(string)
+
+        if is_variable(prefix) or is_constant(prefix):
+            return Formula(prefix), suffix
+    
+        elif suffix:
+            first, suffix = Formula._parse_polish_prefix(suffix)
+            
+            if is_unary(prefix):
+                return Formula(prefix, first), suffix
+                
+            elif is_binary(prefix):
+                second, suffix = Formula._parse_polish_prefix(suffix)
+                return Formula(prefix, first, second), suffix
+        else:
+            return prefix, suffix
+        # Optional Task 1.8
 
     @staticmethod
     def parse_polish(string: str) -> Formula:
@@ -351,16 +382,7 @@ class Formula:
         Returns:
             A formula whose polish notation representation is the given string.
         """
-        prefix, suffix = split_str(string)
-
-        if is_variable(prefix):
-            return (Formula(prefix))
-        elif is_unary(prefix):
-            return Formula(prefix, (Formula.parse_polish(suffix)))
-        elif is_binary(prefix):                                         # & pq
-            root = prefix
-            first, second = split_str(suffix)
-            return Formula(root, first, second)
+        return Formula._parse_polish_prefix(string)[0]
 
     def substitute_variables(self, substitution_map: Mapping[str, Formula]) -> Formula:
         """Substitutes in the current formula, each variable name `v` that is a
