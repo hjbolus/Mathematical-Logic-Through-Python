@@ -8,9 +8,6 @@
 
 from typing import AbstractSet, FrozenSet, Generic, Mapping, Tuple, TypeVar
 from logic_utils import frozen, frozendict
-from itertools import product
-from numba import jit
-from datetime import datetime
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from predicates.syntax import *
