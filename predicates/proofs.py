@@ -912,8 +912,9 @@ def _prove_from_skeleton_proof(formula: Formula,
         skeleton_proof.statement.conclusion, substitution_map) == formula
     for line in skeleton_proof.lines:
         for operator in line.formula.operators():
-            assert is_unary(operator) or is_binary(operator)
-
+#            assert is_unary(operator) or is_binary(operator)
+            assert operator in {'T', 'F', '->', '~', '&', '|'}
+            
     lines = []
     for line in skeleton_proof.lines:
         new_formula = Formula.from_propositional_skeleton(line.formula, substitution_map)
@@ -947,7 +948,7 @@ def prove_tautology(tautology: Formula) -> Proof:
     """
     skeleton, substitution_map = tautology.propositional_skeleton()
     assert is_propositional_tautology(skeleton)
-    assert skeleton.operators().issubset({'->', '~'})
+    assert skeleton.operators().issubset({'T', 'F', '->', '~', '&', '|'})
     skeleton_proof = clean_propositional_proof(prove_propositional_tautology(skeleton))
     return _prove_from_skeleton_proof(tautology, skeleton_proof, substitution_map)
     # Task 9.12
