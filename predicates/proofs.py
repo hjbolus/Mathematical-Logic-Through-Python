@@ -912,8 +912,7 @@ def _prove_from_skeleton_proof(formula: Formula,
         skeleton_proof.statement.conclusion, substitution_map) == formula
     for line in skeleton_proof.lines:
         for operator in line.formula.operators():
-#            assert is_unary(operator) or is_binary(operator)
-            assert operator in {'T', 'F', '->', '~', '&', '|'}
+            assert is_unary(operator) or is_binary(operator)
             
     lines = []
     for line in skeleton_proof.lines:
