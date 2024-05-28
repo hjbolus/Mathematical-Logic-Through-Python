@@ -13,6 +13,8 @@ import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from propositions.semantics import is_tautology as is_propositional_tautology
 from predicates.syntax import *
+from propositions.proofs import clean_proof as clean_propositional_proof
+
 
 #: A mapping from constant names, variable names, and relation names to
 #: terms, variable names, and formulas respectively.
@@ -243,7 +245,7 @@ class Schema:
         for variable in bound_variables:
             assert is_variable(variable)
         root = formula.root
-#         print(formula, f'starting bound variables: {bound_variables}')
+        
         if is_unary(root):
             try:
                 first = Schema._instantiate_helper(formula.first,
@@ -271,12 +273,12 @@ class Schema:
         elif is_relation(root):
             relation_name, arity = formula.relations().pop()
             if arity == 1: #parametrized
-                formula = formula.substitute(constants_and_variables_instantiation_map) #sub in constants and variables
-                parameter = formula.arguments[0]                                        #should this be the parameter from before or after subbing in constants and variables? Easy to test
+                formula = formula.substitute(constants_and_variables_instantiation_map)
+                parameter = formula.arguments[0]
                 if relation_name in relations_instantiation_map:
                     replacement_template = relations_instantiation_map[relation_name]
-                    
-                    if (sinners := replacement_template.free_variables() & formula.bound_variables()) or (sinners := replacement_template.free_variables() & bound_variables): #consider adding formula.bound_variables()
+                        
+                    if sinners := replacement_template.free_variables() & bound_variables:
                         raise Schema.BoundVariableError(sinners.pop(), relation_name)
                     elif parameter in replacement_template.bound_variables():
                         raise Schema.BoundVariableError(parameter, relation_name)
@@ -284,13 +286,13 @@ class Schema:
                         formula = replacement_template.substitute({'_':parameter})
                     except ForbiddenVariableError as e:
                         raise Schema.BoundVariableError(e.variable_name, relation_name)
-                        
+                
             else: #parameterless
                 replacement_template = relations_instantiation_map[relation_name]
-                if (sinners := replacement_template.free_variables() & bound_variables): #consider adding formula.bound_variables()
+                if sinners := replacement_template.free_variables() & bound_variables:
                     raise Schema.BoundVariableError(sinners.pop(), relation_name)
                 formula = replacement_template
-                
+            
         elif is_equality(root):
             formula = formula.substitute(constants_and_variables_instantiation_map)
             
@@ -420,7 +422,7 @@ class Schema:
             else:
                 assert is_relation(construct)
                 assert isinstance(instantiation_map[construct], Formula)
-                
+
         constants_and_variables_instantiation_map = {}
         relations_instantiation_map = {}
         for key in instantiation_map:
@@ -435,7 +437,7 @@ class Schema:
             elif is_relation(key):
                 assert isinstance(instantiation_map[key], Formula)
                 relations_instantiation_map[key] = instantiation_map[key]
-                
+
         bound_variables = set()
         try:
             return Schema._instantiate_helper(self.formula, constants_and_variables_instantiation_map, relations_instantiation_map, bound_variables)
@@ -545,6 +547,13 @@ class Proof:
                 ``False`` otherwise.
             """
             assert line_number < len(lines) and lines[line_number] is self
+            assumption_is_valid = self.assumption in assumptions
+            formula_is_valid = self.formula == self.assumption.instantiate(self.instantiation_map)
+            if assumption_is_valid and formula_is_valid:
+                return True
+            else:
+                print(f'Invalid line [{line_number, self}]\nassumption is valid: {assumption_is_valid}\nformula is valid: {formula_is_valid}')
+                return False
             # Task 9.5
 
     @frozen
@@ -610,6 +619,12 @@ class Proof:
                 current line; ``False`` otherwise.
             """
             assert line_number < len(lines) and lines[line_number] is self
+            formula_is_valid = lines[self.conditional_line_number].formula == Formula('->', lines[self.antecedent_line_number].formula, self.formula)
+            if formula_is_valid and line_number > self.antecedent_line_number and line_number > self.conditional_line_number:
+                return True
+            else:
+                print(f'Invalid line: [{self}]:\nformula is valid: {formula_is_valid}\nline is after antecedent: {line_number > self.antecedent_line_number}\nline is after consequent: {line_number > self.conditional_line_number}')
+                return False
             # Task 9.6
 
     @frozen
@@ -659,12 +674,25 @@ class Proof:
 
             Returns:
                 ``True`` if the formula of the current line is of the form
-                ``'A``\\ `x`\ ``[``\ `nonquantified`\ ``]'``, where
+                `'Ax[nonquantified]'`, where
                 `nonquantified` is the formula of the line from the given lines
                 whose number is the nonquantified line number justifying the
                 current line and `x` is any variable name; ``False`` otherwise.
             """
             assert line_number < len(lines) and lines[line_number] is self
+            assumption_is_prior = line_number > self.nonquantified_line_number
+            if quantifier_is_valid := self.formula.root == 'A':
+                variable_is_valid = is_variable(self.formula.variable)
+                formula_is_valid = self.formula.statement == lines[self.nonquantified_line_number].formula
+                if formula_is_valid and variable_is_valid and assumption_is_prior:
+                    return True
+                else:
+                    print(f'Invalid line [{self}]\nassumption is prior: {assumption_is_prior}\nquantifier_is_valid: {quantifier_is_valid}\nvariable_is_valid: {variable_is_valid}\nformula_is_valid: {formula_is_valid}')
+                    return False
+            print(f'Invalid line [{self}]\nassumption is prior: {assumption_is_prior}\nquantifier_is_valid: {quantifier_is_valid}')
+            return False
+                        
+            
             # Task 9.7
 
     @frozen
@@ -708,6 +736,12 @@ class Proof:
                 (predicate-logic) tautology, ``False`` otherwise.
             """
             assert line_number < len(lines) and lines[line_number] is self
+            prop_skeleton = self.formula.propositional_skeleton()[0]
+            if is_tautology := is_propositional_tautology(prop_skeleton):
+                return True
+            else:
+                print(f'Invalid line: {self}\nThe formula is not a predicate logic tautology because {prop_skeleton} is not a propositional logic tautology')
+                return False
             # Task 9.9
 
     #: An immutable proof line.
@@ -837,6 +871,13 @@ def _axiom_specialization_map_to_schema_instantiation_map(
             assert is_unary(operator) or is_binary(operator)
     for variable in substitution_map:
         assert is_propositional_variable(variable)
+        
+    new_dict = {}
+    for key in propositional_specialization_map:
+        specialization = propositional_specialization_map[key]
+        pred_formula = Formula.from_propositional_skeleton(specialization, substitution_map)
+        new_dict[key.upper()] = pred_formula
+    return new_dict
     # Task 9.11a
 
 def _prove_from_skeleton_proof(formula: Formula,
@@ -863,6 +904,7 @@ def _prove_from_skeleton_proof(formula: Formula,
         `PROPOSITIONAL_AXIOMATIC_SYSTEM_SCHEMAS` via only assumption lines and
         MP lines.
     """
+    skeleton_proof = clean_propositional_proof(skeleton_proof)
     assert len(skeleton_proof.statement.assumptions) == 0 and \
            skeleton_proof.rules.issubset(PROPOSITIONAL_AXIOMATIC_SYSTEM) and \
            skeleton_proof.is_valid()
@@ -871,6 +913,23 @@ def _prove_from_skeleton_proof(formula: Formula,
     for line in skeleton_proof.lines:
         for operator in line.formula.operators():
             assert is_unary(operator) or is_binary(operator)
+
+    lines = []
+    for line in skeleton_proof.lines:
+        new_formula = Formula.from_propositional_skeleton(line.formula, substitution_map)
+        
+        if line.rule in PROPOSITIONAL_AXIOM_TO_SCHEMA:
+            new_rule = PROPOSITIONAL_AXIOM_TO_SCHEMA[line.rule]
+            
+            propositional_specialization_map = PropositionalInferenceRule._formula_specialization_map(line.rule.conclusion,line.formula)
+            instantiation_map = _axiom_specialization_map_to_schema_instantiation_map(propositional_specialization_map, substitution_map)
+            
+            lines.append(Proof.AssumptionLine(new_formula, new_rule, instantiation_map))
+            
+        else:
+            lines.append(Proof.MPLine(new_formula, *line.assumptions))
+    
+    return Proof(PROPOSITIONAL_AXIOMATIC_SYSTEM_SCHEMAS, formula, lines)
     # Task 9.11b
 
 def prove_tautology(tautology: Formula) -> Proof:
@@ -886,7 +945,22 @@ def prove_tautology(tautology: Formula) -> Proof:
         `PROPOSITIONAL_AXIOMATIC_SYSTEM_SCHEMAS` via only assumption lines
         and MP lines.
     """
-    skeleton = tautology.propositional_skeleton()[0]
+    skeleton, substitution_map = tautology.propositional_skeleton()
     assert is_propositional_tautology(skeleton)
     assert skeleton.operators().issubset({'->', '~'})
+    skeleton_proof = clean_propositional_proof(prove_propositional_tautology(skeleton))
+    return _prove_from_skeleton_proof(tautology, skeleton_proof, substitution_map)
     # Task 9.12
+
+# consider changing instantiate so that it can accept either strings or Term items as values of dict (not just strings for variable values and Term objects for constant values)
+
+# pg. 148 
+# problematic example 1
+# schema = Schema(Formula.parse('(Ex[R(c)]->R(c))'), {'c'})
+# schema.instantiate({'c':Term('x')})
+# returns unfortunate instance (Ex[R(x)]->R(x))
+
+# problematic example 2
+# schema = Schema(Formula.parse('Ey[~y=x]'), {'y'})
+# schema.instantiate({'y':'x'})
+# returns unfortunate instance Ey[~x=x]
