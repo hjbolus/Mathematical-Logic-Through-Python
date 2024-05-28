@@ -1,4 +1,4 @@
-Right now I'm working on chapter 9, and the section on propositional logic is complete!
+Right now I'm working on chapter 10, and the section on propositional logic is complete!
 
 Read the official documentation here: https://www.logicthrupython.org/api/
 
