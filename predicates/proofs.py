@@ -245,7 +245,7 @@ class Schema:
         for variable in bound_variables:
             assert is_variable(variable)
         root = formula.root
-        
+
         if is_unary(root):
             try:
                 first = Schema._instantiate_helper(formula.first,
@@ -255,7 +255,7 @@ class Schema:
             except ForbiddenVariableError as e:
                 raise Schema.BoundVariableError(e.variable_name, formula.first.root)
             formula = Formula(root, first)
-            
+
         elif is_binary(root):
             try:
                 first = Schema._instantiate_helper(formula.first,
@@ -269,7 +269,7 @@ class Schema:
             except ForbiddenVariableError as e:
                 raise Schema.BoundVariableError(e.variable_name, formula.first.root)
             formula = Formula(root, first, second)
-            
+
         elif is_relation(root):
             relation_name, arity = formula.relations().pop()
             if arity == 1: #parametrized
@@ -277,7 +277,7 @@ class Schema:
                 parameter = formula.arguments[0]
                 if relation_name in relations_instantiation_map:
                     replacement_template = relations_instantiation_map[relation_name]
-                        
+
                     if sinners := replacement_template.free_variables() & bound_variables:
                         raise Schema.BoundVariableError(sinners.pop(), relation_name)
                     elif parameter in replacement_template.bound_variables():
@@ -286,16 +286,16 @@ class Schema:
                         formula = replacement_template.substitute({'_':parameter})
                     except ForbiddenVariableError as e:
                         raise Schema.BoundVariableError(e.variable_name, relation_name)
-                
+
             else: #parameterless
                 replacement_template = relations_instantiation_map[relation_name]
                 if sinners := replacement_template.free_variables() & bound_variables:
                     raise Schema.BoundVariableError(sinners.pop(), relation_name)
                 formula = replacement_template
-            
+
         elif is_equality(root):
             formula = formula.substitute(constants_and_variables_instantiation_map)
-            
+
         elif is_quantifier(root):
             variable = formula.variable
             if variable in constants_and_variables_instantiation_map:
@@ -445,7 +445,24 @@ class Schema:
             print(f'BoundVariableError: {e.variable_name} is bound within the relation {e.relation_name}')
             return None
         # Task 9.4
+    
+    @staticmethod
+    def parse(string: str) -> Schema:
+        """Parses the given valid string representation into a Schema.
 
+        Parameters:
+            string: string to parse.
+
+        Returns:
+            A schema whose standard string representation is the given string.
+        """
+        formula, templates = string.split('Schema: ')[1].split(' ', maxsplit = 1)
+        formula = Formula.parse(formula)
+        templates = set(templates.split(': ')[1][:-1].split(', '))
+        if templates == {'none'}:
+            templates = {}
+        return Schema(formula, templates)
+        # personal task
 @frozen
 class Proof:
     """An immutable deductive proof in Predicate Logic, comprised of a list of
@@ -556,6 +573,30 @@ class Proof:
                 return False
             # Task 9.5
 
+        @staticmethod
+        def parse(string: str) -> AssumptionLine:
+            """Parses the given valid string representation into an AssumptionLine.
+
+            Parameters:
+                string: string to parse.
+
+            Returns:
+                An AssumptionLine whose standard string representation is the given string.
+            """
+            formula = Formula.parse(string.split(') ', maxsplit=1)[1].split('    (')[0])
+            assumption, instantiation_map = string.split('(Assumption ')[1].split(' instantiated with ')
+            assumption = Schema.parse(assumption)
+            instantiation_map = instantiation_map[1:-2].replace("'",'').replace(' ','').split(',')
+            if len(instantiation_map) > 2:
+                instantiation_map = dict(i.split(':') for i in instantiation_map)
+                for key in instantiation_map:
+                    if not is_variable(instantiation_map[key]):
+                        instantiation_map[key] = Term.parse(instantiation_map[key])
+            else:
+                instantiation_map = {}
+            return Proof.AssumptionLine(formula, assumption, instantiation_map)
+            # personal task
+    
     @frozen
     class MPLine:
         """An immutable proof line justified by the Modus Ponens (MP) inference
@@ -627,6 +668,21 @@ class Proof:
                 return False
             # Task 9.6
 
+        @staticmethod
+        def parse(string: str) -> MPLine:
+            """Parses the given valid string representation into an MPLine.
+
+            Parameters:
+                string: string to parse.
+
+            Returns:
+                An MPLine whose standard string representation is the given string.
+            """
+            formula = Formula.parse(string.split(') ', maxsplit=1)[1].split('    (', maxsplit=1)[0])
+            antecedent, conditional = string.split(' lines ')[1][:-1].split(' and ')
+            return Proof.MPLine(formula, int(antecedent), int(conditional))
+            # personal task
+
     @frozen
     class UGLine:
         """An immutable proof line justified by the Universal Generalization
@@ -691,9 +747,22 @@ class Proof:
                     return False
             print(f'Invalid line [{self}]\nassumption is prior: {assumption_is_prior}\nquantifier_is_valid: {quantifier_is_valid}')
             return False
-                        
-            
             # Task 9.7
+
+        @staticmethod
+        def parse(string: str) -> UGLine:
+            """Parses the given valid string representation into a UGLine.
+
+            Parameters:
+                string: string to parse.
+
+            Returns:
+                A UGLine whose standard string representation is the given string.
+            """
+            prefix, suffix = string[:-1].split('    (UG of line ')
+            formula = Formula.parse(prefix.split(') ',maxsplit=1)[1])
+            return Proof.UGLine(formula, int(suffix))
+            # personal task
 
     @frozen
     class TautologyLine:
@@ -744,6 +813,19 @@ class Proof:
                 return False
             # Task 9.9
 
+        @staticmethod
+        def parse(string: str) -> TautologyLine:
+            """Parses the given valid string representation into a TautologyLine.
+
+            Parameters:
+                string: string to parse.
+
+            Returns:
+                A TautologyLine whose standard string representation is the given string.
+            """
+            return Proof.TautologyLine(Formula.parse(string.split(') ',maxsplit=1)[1].split('    (')[0]))
+            # personal task
+
     #: An immutable proof line.
     Line = Union[AssumptionLine, MPLine, UGLine, TautologyLine]
 
@@ -779,6 +861,37 @@ class Proof:
                 return False
         return True
 
+    @staticmethod
+    def parse(string: str) -> Proof:
+        """Parses the given valid string representation into a Proof.
+
+        Parameters:
+            string: string to parse.
+
+        Returns:
+            A proof whose standard string representation is the given string.
+        """
+        conclusion, suffix = string.split('\n', maxsplit=1)
+        conclusion = Formula.parse(conclusion.split('Proof of ')[1].split(' from')[0])
+        
+        assumptions, suffix = suffix.split('Lines:\n')
+        if assumptions:
+            assumptions = [Schema.parse(i) for i in assumptions.replace('  ','').split('\n') if i]
+        
+        lines = [i for i in suffix.split('\n')[:-1]]
+        new_lines = []
+        for line in lines:
+            if 'Assumption' in line:
+                new_lines.append(Proof.AssumptionLine.parse(line))
+            elif 'MP from lines' in line:
+                new_lines.append(Proof.MPLine.parse(line))
+            elif 'Tautology' in line:
+                new_lines.append(Proof.TautologyLine.parse(line))
+            elif 'UG of line' in line:
+                new_lines.append(Proof.UGLine.parse(line))
+        return Proof(assumptions, conclusion, new_lines)
+        # personal task
+    
 from propositions.proofs import Proof as PropositionalProof, \
                                 InferenceRule as PropositionalInferenceRule, \
                                 SpecializationMap as \
@@ -871,7 +984,7 @@ def _axiom_specialization_map_to_schema_instantiation_map(
             assert is_unary(operator) or is_binary(operator)
     for variable in substitution_map:
         assert is_propositional_variable(variable)
-        
+
     new_dict = {}
     for key in propositional_specialization_map:
         specialization = propositional_specialization_map[key]
@@ -913,22 +1026,22 @@ def _prove_from_skeleton_proof(formula: Formula,
     for line in skeleton_proof.lines:
         for operator in line.formula.operators():
             assert is_unary(operator) or is_binary(operator)
-            
+
     lines = []
     for line in skeleton_proof.lines:
         new_formula = Formula.from_propositional_skeleton(line.formula, substitution_map)
-        
+
         if line.rule in PROPOSITIONAL_AXIOM_TO_SCHEMA:
             new_rule = PROPOSITIONAL_AXIOM_TO_SCHEMA[line.rule]
-            
+
             propositional_specialization_map = PropositionalInferenceRule._formula_specialization_map(line.rule.conclusion,line.formula)
             instantiation_map = _axiom_specialization_map_to_schema_instantiation_map(propositional_specialization_map, substitution_map)
-            
+
             lines.append(Proof.AssumptionLine(new_formula, new_rule, instantiation_map))
-            
+
         else:
             lines.append(Proof.MPLine(new_formula, *line.assumptions))
-    
+
     return Proof(PROPOSITIONAL_AXIOMATIC_SYSTEM_SCHEMAS, formula, lines)
     # Task 9.11b
 
@@ -952,9 +1065,10 @@ def prove_tautology(tautology: Formula) -> Proof:
     return _prove_from_skeleton_proof(tautology, skeleton_proof, substitution_map)
     # Task 9.12
 
-# consider changing instantiate so that it can accept either strings or Term items as values of dict (not just strings for variable values and Term objects for constant values)
 
-# pg. 148 
+
+# consider changing instantiate so that it can accept either strings or Term items as values of dict (not just strings for variable values and Term objects for constant values)
+# pg. 148
 # problematic example 1
 # schema = Schema(Formula.parse('(Ex[R(c)]->R(c))'), {'c'})
 # schema.instantiate({'c':Term('x')})
