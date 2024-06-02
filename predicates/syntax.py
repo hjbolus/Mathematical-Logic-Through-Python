@@ -9,8 +9,8 @@
 from __future__ import annotations
 from functools import lru_cache, reduce
 from typing import AbstractSet, Mapping, Optional, Sequence, Set, Tuple, Union
-
 from logic_utils import fresh_variable_name_generator, frozen, memoized_parameterless_method
+
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from propositions.syntax import Formula as PropositionalFormula, is_variable as is_propositional_variable
@@ -99,35 +99,31 @@ def is_function(string: str) -> bool:
     """
     return string[0] >= 'f' and string[0] <= 't' and string.isalnum()
 
-def find_corresponding_parenthesis(string: str, position: int) -> int:
-    if not string[position] == '(' or not ')' in string[position:]:
-        print('string is ', string, 'and the targeted parenthesis does not close')
-        return len(string)
+def separate_relation_name(string: str) -> Tuple:
+    assert string and is_relation(string[0]), print(f'{string} does not start with a relation name')
     counter = 0
-    for i,j in enumerate(string[position:]):
-        if j == '(':
+    while string[counter].isalnum():
+        counter += 1
+    return string[:counter], string[counter:]
+
+def separate_bracketed_formula(string: str) -> Tuple:
+    if (open_bracket := string[0]) not in {'[','('}:
+        print(f"{string} doesn't start with a bracket")
+        return string
+    if open_bracket == '[':
+        close_bracket =']'
+    else:
+        close_bracket = ')'
+    counter = 0
+    for i,j in enumerate(string):
+        if j == open_bracket:
             counter +=1
-        elif j == ')':
+        elif j == close_bracket:
             counter -=1
         if counter == 0:
-            position = i+position
-            return position
+            return string[:i+1], string[i+1:]
 
-def find_corresponding_bracket(string: str, position: int) -> int:
-    if not string[position] == '[' or not ']' in string[position:]:
-        print('string is ', string, 'and the targeted bracket does not close')
-        return len(string)
-    counter = 0
-    for i,j in enumerate(string[position:]):
-        if j == '[':
-            counter +=1
-        elif j == ']':
-            counter -=1
-        if counter == 0:
-            position = i+position
-            return position
-
-def retrieve_operator(string: str) -> list:
+def separate_operator(string: str) -> list:
     if string[0] in {'&', '|', '+'}:
         return string[0], string[1:]
     elif string[0] == '-':
@@ -137,65 +133,27 @@ def retrieve_operator(string: str) -> list:
         assert string[0:3] == '<->'
         return string[0:3], string[3:]
 
-def split_str(string: str) -> list:
-    prefix = ''
-    if is_constant(string[0]) or is_variable(string[0]):
-        if string[0] == '_':
-            prefix = string[0]
-            string = string[1:]
-        else:
-            while string and string[0].isalnum():
-                prefix += string[0]
-                string = string.replace(string[0], '', 1)
-    else:
-        counter = 0
-        while string and string[counter].isalnum():
-            counter += 1
-        assert string[counter] == '(', print('counter is ', counter, 'function name is ', function_name, 'string is ', string)
-
-        close_par = find_corresponding_parenthesis(string, counter)
-        prefix = string[:close_par+1]
-        string = string[close_par+1:]
-    return prefix, string
-
-def split_for_formula(string: str) -> list:
-    prefix = ''
+def separate_term(string: str) -> Tuple:
+    assert string
     sample = string[0]
+    if sample == '_':
+        return ('_', string[1:])
+    counter = 0
+    while counter < len(string) and string[counter].isalnum():
+        counter += 1
+    if is_constant(sample) or is_variable(sample):
+        return string[:counter], string[counter:]
 
-    if is_relation(sample):
-        counter = 0
-        while string and string[counter].isalnum():
-            counter += 1
-        assert string[counter] == '(', print('counter is ', counter, 'function name is ', function_name, 'string is ', string)
+    elif is_function(sample):
+        arguments, suffix = separate_bracketed_formula(string[counter:])
+        return string[:counter]+arguments, suffix
 
-        close_par = find_corresponding_parenthesis(string, counter)
-        prefix = string[:close_par+1]
-        string = string[close_par+1:]
-
-    elif is_constant(sample) or is_variable(sample) or is_function(sample):
-        first, string = split_str(string)
-        second, string = split_str(string[1:])
-        prefix = f'{first}={second}'
-
-    elif is_unary(sample):
-        first, string = split_for_formula(string[1:])
-        prefix = f'~{first}'
-
-    elif sample == '(':
-        if string[1] == '(':
-            cor_par = find_corresponding_parenthesis(string[1:], 0)
-            prefix = string[1:cor_par+2]
-            string = string[cor_par+2:]
-        else:
-            prefix, string = split_for_formula(string[1:])
-
-    else:
-        assert is_quantifier(sample)
-        quantifier = sample
-        variable, suffix = split_str(string[1:])
-        cor_bar = find_corresponding_bracket(suffix, 0)
-        return f'{quantifier}{variable}{suffix[:cor_bar+1]}', suffix[cor_bar+1:]
-    return prefix, string
+def separate_function_or_relation_name(string: str) -> Tuple:
+    assert string
+    counter = 0
+    while string[counter].isalnum():
+        counter += 1
+    return string[:counter], *separate_bracketed_formula(string[counter:])
 
 @frozen
 class Term:
@@ -284,26 +242,24 @@ class Term:
             or a variable name (e.g., ``'x12'``), then the parsed prefix will be
             that entire name (and not just a part of it, such as ``'x1'``).
         """
-        prefix_or_args, suffix = split_str(string)
+    def _parse_prefix(string: str) -> Tuple[Term, str]:
+        if string:
+            sample = string[0]
+            if is_constant(sample) or is_variable(sample):
+                prefix, suffix = separate_term(string)
+                return Term(prefix), suffix
+            else:
+                assert is_function(sample)
+                function_name, args, suffix = separate_function_or_relation_name(string)
+                arg_suffix = args[1:-1]
+                arg_list = []
 
-        if is_constant(prefix_or_args) or is_variable(prefix_or_args):
-            return Term(prefix_or_args), suffix
-
-        else:
-            function_name = ''
-            while prefix_or_args and prefix_or_args[0].isalnum():
-                function_name += prefix_or_args[0]
-                prefix_or_args = prefix_or_args.replace(prefix_or_args[0], '', 1)
-
-            arg_suffix = prefix_or_args[1:-1]
-            arg_list = []
-            while arg_suffix:
-                arg_prefix, arg_suffix = split_str(arg_suffix)
-                arg_list.append(arg_prefix)
-                if arg_suffix and arg_suffix[0] == ',':
-                    arg_suffix = arg_suffix[1:]
-
-            return Term(function_name, [Term._parse_prefix(arg)[0] for arg in arg_list]), suffix
+                while arg_suffix:
+                    arg_prefix, arg_suffix = separate_term(arg_suffix)
+                    arg_list.append(arg_prefix)
+                    if arg_suffix and arg_suffix[0] == ',':
+                        arg_suffix = arg_suffix[1:]
+                return Term(function_name, [Term._parse_prefix(arg)[0] for arg in arg_list]), suffix
         # Task 7.3a
 
     @staticmethod
@@ -420,12 +376,15 @@ class Term:
         for variable in forbidden_variables:
             assert is_variable(variable)
 
+        if not substitution_map:
+            return self
+
         if sinners:= set.union(*[value.variables() for value in substitution_map.values()]) & forbidden_variables:
             raise ForbiddenVariableError(sinners.pop())
 
         string = str(self)
         if string in substitution_map:
-            term = substitution_map[string]
+            term = substitution_map[str(self)]
         elif is_variable(string) or is_constant(string):
             term = self
         else:
@@ -639,23 +598,18 @@ class Formula:
         """
         sample = string[0]
         if is_constant(sample) or is_variable(sample) or is_function(sample):
-            first, suffix = split_str(string)
+            first, suffix = separate_term(string)
             assert suffix[0] == '='
-            second, suffix = split_str(suffix[1:])
+            second, suffix = separate_term(suffix[1:])
             formula = Formula('=', [Term.parse(first), Term.parse(second)])
 
         elif is_relation(sample):
-            prefix_or_args, suffix = split_str(string)
-
-            relation_name = ''
-            while prefix_or_args and prefix_or_args[0].isalnum():
-                relation_name += prefix_or_args[0]
-                prefix_or_args = prefix_or_args.replace(prefix_or_args[0], '', 1)
-
-            arg_suffix = prefix_or_args[1:-1]
+            relation_name, args, suffix = separate_function_or_relation_name(string)
+            arg_suffix = args[1:-1]
             arg_list = []
+
             while arg_suffix:
-                arg_prefix, arg_suffix = split_str(arg_suffix)
+                arg_prefix, arg_suffix = separate_term(arg_suffix)
                 arg_list.append(arg_prefix)
                 if arg_suffix and arg_suffix[0] == ',':
                     arg_suffix = arg_suffix[1:]
@@ -667,21 +621,16 @@ class Formula:
 
         elif is_quantifier(sample):
             quantifier = sample
-            variable, suffix = split_str(string[1:])
-            cor_bra = find_corresponding_bracket(suffix, 0)
-            scope = suffix[:cor_bra+1]
-            suffix = suffix[cor_bra+1:]
-            formula = Formula(quantifier, variable, Formula._parse_prefix(scope[1:-1])[0])
+            variable, suffix = separate_term(string[1:])
+            statement, suffix = separate_bracketed_formula(suffix)
+            formula = Formula(quantifier, variable, Formula._parse_prefix(statement[1:-1])[0])
 
         else:
             assert sample == '('
-            cor_par = find_corresponding_parenthesis(string, 0)
-            prefix = string[:cor_par]
-            suffix = string[cor_par+1:]
-
-            first, remaining = split_for_formula(prefix)
-            operator, second = retrieve_operator(remaining)
-            formula = Formula(operator, Formula._parse_prefix(first)[0], Formula._parse_prefix(second)[0])
+            binary_formula, suffix = separate_bracketed_formula(string)
+            first, remaining = Formula._parse_prefix(binary_formula[1:])
+            operator, second = separate_operator(remaining)
+            formula = Formula(operator, first, Formula._parse_prefix(second)[0])
         return formula, suffix
         # Task 7.4a
 
@@ -911,12 +860,14 @@ class Formula:
         for variable in forbidden_variables:
             assert is_variable(variable)
 
+        if not substitution_map:
+            return self
+
         if sinners:= set.union(*[value.variables() for value in substitution_map.values()]) & forbidden_variables:
             raise ForbiddenVariableError(sinners.pop())
 
         if str(self) in substitution_map:
-            formula = substitution_map[string]
-
+            formula = substitution_map[str(self)]
         else:
             root = self.root
             if is_unary(root):
@@ -1051,7 +1002,8 @@ class Formula:
         # Task 9.10
 
 def make_formula_of_size(size: int) -> Formula:
-    """Accepts an integer, returns a formula of the form Exi[...Ex0[(...(L(x0,x1)&...)&L(xi,xi+1))]]] up to i = size. 248 is the max size I can request before an error."""
+    """Accepts an integer `size`, returns a formula of the form Exi[...Ex0[(...(L(x0,x1)&...)&L(xi,xi+1))]]] up to i = `size`. 248 is the max size I can request before an error.
+    If L is defined as the less-than relation, the formula is true for statements like (0<1&(1<2&(2<3))))"""
     assert size > 0
     formula = Formula('L', [Term('x0'), Term('x1')])
     for i in range(1,size):
