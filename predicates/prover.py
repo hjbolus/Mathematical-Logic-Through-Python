@@ -153,11 +153,11 @@ class Prover:
                     instantiation_map[key] = Formula.parse(value)
                 else:
                     assert isinstance(value, Formula)
-        
+
 #         print('\n',instance, assumption, instantiation_map,'\n')
         return self._add_line(Proof.AssumptionLine(instance, assumption,
                                                    instantiation_map))
-        
+
     def add_assumption(self, unique_instance: Union[Formula, str]) -> int:
         """Appends to the proof being created by the current prover a line that
         validly justifies the unique instance of one of the assumptions/axioms
@@ -239,6 +239,32 @@ class Prover:
         return self._add_line(Proof.UGLine(quantified,
                                            nonquantified_line_number))
 
+    def add_and_introduction(self, firstline, secondline):
+        first = self._lines[firstline].formula
+        second = self._lines[secondline].formula
+        tautology = Formula('->',first,
+                        Formula('->',second,
+                            Formula('&', first, second)))
+        step1 = self.add_tautology(tautology)
+        step2 = self.add_mp(tautology.second, firstline, step1)
+        return self.add_mp(tautology.second.second, secondline, step2)
+        # personal task
+
+    def add_and_elimination(self, conjunction_line, desired_operand):
+        conjunction = self._lines[conjunction_line].formula
+        assert conjunction.root == '&'
+        assert conjunction.first == desired_operand or conjunction.second == desired_operand
+        tautology = Formula('->', conjunction, desired_operand)
+        step1 = self.add_tautology(tautology)
+        return self.add_mp(desired_operand, conjunction_line, step1)
+        # personal task
+
+    def add_or_introduction(self, conjunct1, conjunct1line, conjunct2, conjunct2line):
+        pass
+
+    def add_or_elimination(self, ):
+        pass
+
     def add_proof(self, conclusion: Union[Formula, str], proof: Proof) -> int:
         """Appends to the proof being created by the current prover a validly
         justified inlined version of the given proof of the given conclusion,
@@ -272,7 +298,7 @@ class Prover:
                             line.nonquantified_line_number + line_shift)
         line_number = len(self._lines) - 1
         assert self._lines[line_number].formula == conclusion
-        return line_number                
+        return line_number
 
     def add_universal_instantiation(self, instantiation: Union[Formula, str],
                                     line_number: int, term: Union[Term, str]) \
@@ -311,10 +337,10 @@ class Prover:
         assert instantiation == \
                quantified.statement.substitute({quantified.variable: term})
 
-        instantiation_map = {'R': quantified.statement.substitute({quantified.variable: Term('_')}), 
-                             'c': term, 
+        instantiation_map = {'R': quantified.statement.substitute({quantified.variable: Term('_')}),
+                             'c': term,
                              'x': quantified.variable}
-            
+
         step1 = self.add_instantiated_assumption(Formula('->', quantified, instantiation), Prover.UI, instantiation_map)
         return self.add_mp(instantiation, line_number, step1)
         # Task 10.1
@@ -340,7 +366,7 @@ class Prover:
             implication = Formula.parse(implication)
         for line_number in line_numbers:
             assert line_number < len(self._lines)
-        
+
         line_numbers = sorted(line_numbers)
         tautology = implication
         for line in line_numbers[::-1]:
@@ -351,7 +377,6 @@ class Prover:
                 tautology = tautology.second
                 step = self.add_mp(tautology, line, step)
         return self.add_mp(implication, line_numbers[-1], step)
-
         # Task 10.2
 
     def add_existential_derivation(self, consequent: Union[Formula, str],
@@ -387,11 +412,11 @@ class Prover:
         assert line_number2 < len(self._lines)
         conditional = self._lines[line_number2].formula
         assert conditional == Formula('->', quantified.statement, consequent)
-        
+
         variable = quantified.variable
         step1 = self.add_ug(Formula('A', variable, self._lines[line_number2].formula), line_number2)
-        instantiation_map = {'Q': consequent, 
-                        'R': quantified.statement.substitute({variable:Term('_')}), 
+        instantiation_map = {'Q': consequent,
+                        'R': quantified.statement.substitute({variable:Term('_')}),
                         'x': variable}
         step2 = self.add_instantiated_assumption(Prover.ES.instantiate(instantiation_map), Prover.ES, instantiation_map)
         return self.add_tautological_implication(consequent, {line_number1, step1, step2})
@@ -422,6 +447,13 @@ class Prover:
         equality = self._lines[line_number].formula
         assert equality == Formula('=', [flipped.arguments[1],
                                          flipped.arguments[0]])
+        x, y = equality.arguments
+        instantiation_map = {'R': Formula('=', [Term('_'), x]), 'c': x, 'd': y}
+        step1 = self.add_instantiated_assumption(Prover.ME.instantiate(instantiation_map), Prover.ME, instantiation_map)
+        step2 = self.add_mp(self._lines[step1].formula.second, line_number, step1)
+        step3 = self.add_instantiated_assumption(Prover.RX.instantiate({'c':x}), Prover.RX, {'c':x})
+        return self.add_mp(self._lines[step2].formula.second, step3, step2)
+        
         # Task 10.6
 
     def add_free_instantiation(self, instantiation: Union[Formula, str],
@@ -453,7 +485,7 @@ class Prover:
         Returns:
             The line number of the newly appended line that justifies the given
             formula in the proof being created by the current prover.
-            
+
         Examples:
             If Line `line_number` contains the formula
             ``'(z=5&Az[f(x,y)=g(z,y)])'`` and `substitution_map` is
@@ -476,6 +508,32 @@ class Prover:
             assert not is_z_and_number(variable)
         assert original.free_variables().issuperset(substitution_map.keys())
         assert instantiation == original.substitute(substitution_map)
+        temp_variables = {}
+        new_variables = {}
+        
+        #Produce intermediary dictionaries and perform universal generalization over all keys in substitution map
+        for original_variable in substitution_map:
+            temp_variable = next(fresh_variable_name_generator)
+            temp_variables[original_variable] = temp_variable
+            new_variables[temp_variable] = substitution_map[original_variable]
+            line_number = self.add_ug(Formula('A', original_variable, self._lines[line_number].formula), line_number)
+        
+        #Universal instantiation to replace all original variables with temporary variables
+        for _ in substitution_map:
+            quantified_variable = self._lines[line_number].formula.variable
+            new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: Term(temp_variables[quantified_variable])})
+            line_number = self.add_universal_instantiation(new_formula, line_number, temp_variables[quantified_variable])
+        
+        #Universal generalization over all temporary variables
+        for temp_variable in new_variables:
+            line_number = self.add_ug(Formula('A', temp_variable, self._lines[line_number].formula), line_number)
+        
+        #Universal instantiation to replace all temporary variables with desired variables
+        for _ in new_variables:
+            quantified_variable = self._lines[line_number].formula.variable
+            new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: new_variables[quantified_variable]})
+            line_number = self.add_universal_instantiation(new_formula, line_number, new_variables[quantified_variable])
+        return line_number
         # Task 10.7
 
     def add_substituted_equality(self, substituted: Union[Formula, str],
