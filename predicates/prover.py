@@ -578,6 +578,15 @@ class Prover:
                                  {'_': equality.arguments[0]}),
                              parametrized_term.substitute(
                                  {'_': equality.arguments[1]})])
+        x, y = equality.arguments
+        nonparametrized_term = parametrized_term.substitute({'_': x})
+        phi = Formula('=', [nonparametrized_term, parametrized_term])
+        instantiation_map = {'R': phi, 'c': x, 'd': y}
+        me = Prover.ME.instantiate(instantiation_map)
+        step1 = self.add_instantiated_assumption(me, Prover.ME, instantiation_map)
+        step2 = self.add_mp(me.second, line_number, step1)
+        step3 = self.add_instantiated_assumption(Prover.RX.instantiate({'c':nonparametrized_term}), Prover.RX, {'c':nonparametrized_term})
+        return self.add_mp(me.second.second, step3, step2)
         # Task 10.8
 
     def _add_chaining_of_two_equalities(self, line_number1: int,
@@ -610,6 +619,14 @@ class Prover:
         equality2 = self._lines[line_number2].formula
         assert is_equality(equality2.root)
         assert equality1.arguments[1] == equality2.arguments[0]
+        
+        x, y = equality1.arguments
+        z = equality2.arguments[1]
+        inst_map = {'R': Formula('=',[x,Term('_')]), 'c': y, 'd': z}
+        me = Prover.ME.instantiate(inst_map)
+        step1 = self.add_instantiated_assumption(me, Prover.ME, inst_map)
+        step2 = self.add_mp(me.second, line_number2, step1)
+        return self.add_mp(me.second.second, line_number1, step2)
         # Task 10.9a
 
     def add_chained_equality(self, chained: Union[Formula, str],
@@ -655,4 +672,19 @@ class Prover:
             assert equality.arguments[0] == current_term
             current_term = equality.arguments[1]
         assert chained.arguments[1] == current_term
+        
+        step0 = line_numbers[0]
+        equality1 = self._lines[step0].formula
+        
+        for line in line_numbers[1:]:
+            equality2 = self._lines[line].formula
+            x, y = equality1.arguments
+            z = equality2.arguments[1]
+            inst_map = {'R': Formula('=', [x, Term('_')]), 'c': y, 'd': z}
+            me = Prover.ME.instantiate(inst_map)
+            step1 = self.add_instantiated_assumption(me, Prover.ME, inst_map)
+            step2 = self.add_mp(me.second, line, step1)
+            step0 = self.add_mp(me.second.second, step0, step2)
+            equality1 = me.second.second
+        return step0
         # Task 10.9b
