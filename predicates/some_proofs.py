@@ -378,8 +378,42 @@ def prove_group_unique_zero(print_as_proof_forms: bool = False) -> Proof:
         `~predicates.prover.Prover.AXIOMS`.
     """
     prover = Prover(GROUP_AXIOMS.union({'plus(a,c)=a'}), print_as_proof_forms)
-    # Task 10.10
+    step1 = prover.add_assumption('plus(a,c)=a')
+    step2 = prover.add_assumption('plus(0,x)=x')
+    step3 = prover.add_ug('Ax[plus(0,x)=x]', step2)
+    step4 = prover.add_universal_instantiation('plus(0,a)=a', step3, 'a')
+    step5 = prover.add_flipped_equality('a=plus(0,a)', step4)
+    step6 = prover.add_chained_equality('plus(a,c)=plus(0,a)', [step1, step5])
+    step7 = prover.add_substituted_equality(Formula.parse('plus(minus(a),plus(a,c))=plus(minus(a),plus(0,a))'), step6, Term.parse('plus(minus(a),_)'))
+    step8 = prover.add_assumption('plus(plus(x,y),z)=plus(x,plus(y,z))')
+
+    inst_map = {'x': Term.parse('minus(a)'), 'y': 'a', 'z': 'c'}
+    step9 = prover.add_free_instantiation('plus(plus(minus(a),a),c)=plus(minus(a),plus(a,c))', step8, inst_map)
+    inst_map = {'x': Term.parse('minus(a)'), 'y': 'a', 'z': '0'}
+
+    step10 = prover.add_assumption('plus(minus(x),x)=0')
+    step11 = prover.add_free_instantiation('plus(minus(a),a)=0', step10, {'x':'a'})
+    inst_map = {'R': Formula.parse('plus(plus(minus(a),a),0)=plus(_,0)'), 'c': Term.parse('plus(minus(a),a)'), 'd': Term('0')}
+
+    step12 = prover.add_assumption('plus(0,x)=x')
+
+    inst_map = {'R': Formula.parse('plus(plus(minus(a),a),c)=plus(_,c)'), 'c': Term.parse('plus(minus(a),a)'), 'd': Term('0')}
+    step13 = prover.add_instantiated_assumption(Prover.ME.instantiate(inst_map), Prover.ME, inst_map)
+    step14 = prover.add_mp('(plus(plus(minus(a),a),c)=plus(plus(minus(a),a),c)->plus(plus(minus(a),a),c)=plus(0,c))', step11, step13)
+    step15 = prover.add_instantiated_assumption('plus(plus(minus(a),a),c)=plus(plus(minus(a),a),c)', Prover.RX, {'c': Term.parse('plus(plus(minus(a),a),c)')})
+    step16 = prover.add_mp('plus(plus(minus(a),a),c)=plus(0,c)', step15, step14)
+    step17 = prover.add_free_instantiation('plus(0,c)=c', step12, {'x':'c'})
+
+    inst_map = {'R': Formula.parse('plus(minus(a),plus(0,a))=plus(minus(a),_)'), 'c': Term.parse('plus(0,a)'), 'd': Term('a')}
+    step18 = prover.add_instantiated_assumption(Prover.ME.instantiate(inst_map), Prover.ME, inst_map)
+    step19 = prover.add_mp('(plus(minus(a),plus(0,a))=plus(minus(a),plus(0,a))->plus(minus(a),plus(0,a))=plus(minus(a),a))', step4, step18)
+    step20 = prover.add_instantiated_assumption(Prover.RX.instantiate({'c':Term.parse('plus(minus(a),plus(0,a))')}), Prover.RX, {'c':'plus(minus(a),plus(0,a))'})
+    step21 = prover.add_mp('plus(minus(a),plus(0,a))=plus(minus(a),a)', step20, step19)
+    step22 = prover.add_flipped_equality('plus(0,c)=plus(plus(minus(a),a),c)', step16)
+    step23 = prover.add_flipped_equality('c=plus(0,c)', step17)
+    step24 = prover.add_chained_equality('c=0', [step23, step22, step9, step7, step21, step11])
     return prover.qed()
+    # Task 10.10
 
 #: The six field axioms
 FIELD_AXIOMS = frozenset(GROUP_AXIOMS.union(
@@ -400,8 +434,70 @@ def prove_field_zero_multiplication(print_as_proof_forms: bool = False) -> \
         `~predicates.prover.Prover.AXIOMS`.
     """
     prover = Prover(FIELD_AXIOMS, print_as_proof_forms)
-    # Task 10.11
+    # add assumptions
+    step1_1 = prover.add_assumption('plus(0,x)=x')
+    step1_2 = prover.add_assumption('times(x,plus(y,z))=plus(times(x,y),times(x,z))')
+    step1_3 = prover.add_assumption('plus(minus(x),x)=0')
+    step1_4 = prover.add_assumption('plus(x,y)=plus(y,x)')
+    step1_5 = prover.add_assumption('plus(plus(x,y),z)=plus(x,plus(y,z))')
+    step1_6 = prover.add_assumption('times(x,y)=times(y,x)')
+
+    # 0+0=0 ; plus(0,0)=0 - free instantiation of axiom 3
+    step2 = prover.add_free_instantiation('plus(0,0)=0', step1_1, {'x':'0'})
+
+    # x*0=x*(0+0) ; times(x,0)=times(x,plus(0,0)) - ME
+    step3_1 = prover.add_flipped_equality('0=plus(0,0)', step2)
+    inst_map = {'R': Formula.parse('times(x,0)=times(x,_)'), 'c': Term.parse('0'), 'd': Term.parse('plus(0,0)')}
+    step3_2 = prover.add_instantiated_assumption(Prover.ME.instantiate(inst_map), Prover.ME, inst_map)
+    step3_3 = prover.add_mp(prover._lines[step3_2].formula.second, step3_1, step3_2)
+    step3_4 = prover.add_instantiated_assumption('times(x,0)=times(x,0)', Prover.RX, {'c': 'times(x,0)'})
+    step3_5 = prover.add_mp(prover._lines[step3_3].formula.second, step3_4, step3_3)
+
+    # x*(0+0)=(x*0)+(x*0) ; times(x,plus(0,0))=plus(times(x,0),times(x,0)) - free instantiation of axiom 6
+    step4 = prover.add_free_instantiation('times(x,plus(0,0))=plus(times(x,0),times(x,0))', step1_2, {'y':'0', 'z':'0'})
+
+    # x*0=(x*0)+(x*0) ; times(x,0)=plus(times(x,0),times(x,0)) - chain from the previous two
+    step5_1 = prover.add_chained_equality('times(x,0)=plus(times(x,0),times(x,0))', [step3_5, step4])
+
+    # -(x*0)+((x*0)+(x*0))=-(x*0)+(x*0) ; ME with c=(x*0)+(x*0), d=x*0, R='-(x*0)+_=-(x*0)+(x*0)'
+    inst_map = {'R': Formula.parse('plus(minus(times(x,0)),_)=plus(minus(times(x,0)),times(x,0))'), 'c': Term.parse('times(x,0)'), 'd': Term.parse('plus(times(x,0),times(x,0))')}
+    step6_1 = prover.add_instantiated_assumption(Prover.ME.instantiate(inst_map), Prover.ME, inst_map)
+    step6_2 = prover.add_mp(prover._lines[step6_1].formula.second, step5_1, step6_1)
+    step6_3 = prover.add_instantiated_assumption('plus(minus(times(x,0)),times(x,0))=plus(minus(times(x,0)),times(x,0))', Prover.RX, {'c': 'plus(minus(times(x,0)),times(x,0))'})
+    step6_4 = prover.add_mp(prover._lines[step6_2].formula.second, step6_3, step6_2)
+
+    # -(x*0)+(x*0)=0 ; free instantiation of axiom 2
+    step7 = prover.add_free_instantiation('plus(minus(times(x,0)),times(x,0))=0', step1_3, {'x':'times(x,0)'})
+    step7_1 = prover.add_flipped_equality('0=plus(minus(times(x,0)),times(x,0))', step7)
+
+    # (-(x*0)+(x*0))+(x*0)=0
+    step8 = prover.add_chained_equality('plus(minus(times(x,0)),plus(times(x,0),times(x,0)))=0' , [step6_4,step7])
+
+    # 0+(x*0)=(-(x*0)+(x*0))+(x*0)
+    inst_map = {'R': Formula.parse('plus(0,times(x,0))=plus(_,times(x,0))'), 'c': Term.parse('0'), 'd': Term.parse('plus(minus(times(x,0)),times(x,0))')}
+    step9_1 = prover.add_instantiated_assumption(Prover.ME.instantiate(inst_map), Prover.ME, inst_map)
+    step9_2 = prover.add_mp(prover._lines[step9_1].formula.second, step7_1, step9_1)
+    step9_3 = prover.add_instantiated_assumption('plus(0,times(x,0))=plus(0,times(x,0))', Prover.RX, {'c': 'plus(0,times(x,0))'})
+    step9_4 = prover.add_mp(prover._lines[step9_2].formula.second, step9_3, step9_2)
+
+    # x=plus(x,0) from x=plus(0,x)
+    step10_1 = prover.add_flipped_equality('x=plus(0,x)', step1_1)
+    step10_2 = prover.add_free_instantiation('plus(0,x)=plus(x,0)', step1_4, {'x': '0', 'y': 'x'})
+    step10_3 = prover.add_chained_equality('x=plus(x,0)', [step10_1, step10_2])
+
+    # x*0=(x*0)+0 ; times(x,0)=plus(times(x,0),0)
+    step11_1 = prover.add_free_instantiation('times(x,0)=plus(times(x,0),0)', step10_3, {'x': Term.parse('times(x,0)')})
+
+    step12 = prover.add_free_instantiation('plus(times(x,0),0)=plus(0,times(x,0))', step1_4, {'x': 'times(x,0)', 'y': '0'})
+
+    step13 = prover.add_free_instantiation('plus(plus(minus(times(x,0)),times(x,0)),times(x,0))=plus(minus(times(x,0)),plus(times(x,0),times(x,0)))', step1_5, {'x': 'minus(times(x,0))', 'y': 'times(x,0)', 'z': 'times(x,0)'})
+
+    # times(0,x) = times(x,0)
+    step14 = prover.add_free_instantiation('times(0,x)=times(x,0)', step1_6, {'x': '0', 'y': 'x'})
+
+    prover.add_chained_equality('times(0,x)=0', [step14, step11_1, step12, step9_4, step13, step8])
     return prover.qed()
+    # Task 10.11
 
 #: Axiom schema of induction
 INDUCTION_AXIOM = Schema(
@@ -424,8 +520,50 @@ def prove_peano_left_neutral(print_as_proof_forms: bool = False) -> Proof:
         `~predicates.prover.Prover.AXIOMS`.
     """
     prover = Prover(PEANO_AXIOMS, print_as_proof_forms)
-    # Task 10.12
+
+    # prove (plus(0,x)=x->s(plus(0,x))=s(x))
+    inst_map = {'R': Formula.parse('s(plus(0,x))=s(_)'), 'c': Term.parse('plus(0,x)'), 'd': Term.parse('x')}
+    step1 = prover.add_instantiated_assumption(Prover.ME.instantiate(inst_map), Prover.ME, inst_map)
+    step2 = prover.add_instantiated_assumption('s(plus(0,x))=s(plus(0,x))', Prover.RX, {'c':'s(plus(0,x))'})
+    taut = Formula.from_propositional_skeleton(PropositionalFormula.parse('(q->(p->q))'), {'p':Formula.parse('plus(0,x)=x'), 'q':Formula.parse('s(plus(0,x))=s(plus(0,x))')})
+    step3 = prover.add_tautology(taut)
+    step4 = prover.add_mp(prover._lines[step3].formula.second, step2, step3)
+    taut = Formula.from_propositional_skeleton(PropositionalFormula.parse('((p->(q->r))->((p->q)->(p->r)))'), {'p':Formula.parse('plus(0,x)=x'), 'q':Formula.parse('s(plus(0,x))=s(plus(0,x))'), 'r':Formula.parse('s(plus(0,x))=s(x)')})
+    step5 = prover.add_tautology(taut)
+    step6 = prover.add_mp(prover._lines[step5].formula.second, step1, step5)
+    step7 = prover.add_mp(prover._lines[step6].formula.second, step4, step6)
+
+    # prove (plus(0,x)=x->plus(0,s(x))=s(x))
+    step8 = prover.add_assumption('plus(x,s(y))=s(plus(x,y))')
+    step9 = prover.add_free_instantiation('plus(0,s(x))=s(plus(0,x))', step8, {'x': '0', 'y': 'x'})         #this or step10 will be q for the next tautology
+    step10 = prover.add_flipped_equality('s(plus(0,x))=plus(0,s(x))', step9)
+
+    inst_map = {'R': Formula.parse('plus(0,s(x))=_'), 'c': Term.parse('s(plus(0,x))'), 'd': Term.parse('s(x)')}
+    step10 = prover.add_instantiated_assumption(Prover.ME.instantiate(inst_map), Prover.ME, inst_map)
+
+    taut = PropositionalFormula.parse('((p->(q->r))->(q->(p->r)))')
+    inst_map = {'p': Formula.parse('s(plus(0,x))=s(x)'), 'q': Formula.parse('plus(0,s(x))=s(plus(0,x))'), 'r': Formula.parse('plus(0,s(x))=s(x)')}
+    step11 = prover.add_tautology(Formula.from_propositional_skeleton(taut,inst_map))
+    step12 = prover.add_mp(prover._lines[step11].formula.second, step10, step11)
+    step13 = prover.add_mp(prover._lines[step12].formula.second, step9, step12)
+
+    taut= PropositionalFormula.parse('((p->q)->((q->r)->(p->r)))')
+    inst_map = {'p': Formula.parse('plus(0,x)=x'), 'q': Formula.parse('s(plus(0,x))=s(x)'), 'r': Formula.parse('plus(0,s(x))=s(x)')}
+    step14 = prover.add_tautology(Formula.from_propositional_skeleton(taut, inst_map))
+    step15 = prover.add_mp(prover._lines[step14].formula.second, step7, step14)
+    step16 = prover.add_mp(prover._lines[step15].formula.second, step13, step15)
+
+    #end game
+    step17 = prover.add_assumption('plus(x,0)=x')
+    step18 = prover.add_free_instantiation('plus(0,0)=0', step17, {'x':'0'})
+    step19 = prover.add_ug(Formula('A','x', prover._lines[step16].formula), step16)
+    step20 = prover.add_and_introduction(step18, step19)
+    inst_map = {'R': Formula.parse('plus(0,_)=_')}
+    step21 = prover.add_instantiated_assumption(INDUCTION_AXIOM.instantiate(inst_map), INDUCTION_AXIOM, inst_map)
+    step22 = prover.add_mp('Ax[plus(0,x)=x]', step20, step21)
+    step23 = prover.add_universal_instantiation('plus(0,x)=x', step22, 'x')
     return prover.qed()
+    # Task 10.12
 
 #: Axiom schema of (unrestricted) comprehension
 COMPREHENSION_AXIOM = Schema(
