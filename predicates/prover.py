@@ -453,7 +453,7 @@ class Prover:
         step2 = self.add_mp(self._lines[step1].formula.second, line_number, step1)
         step3 = self.add_instantiated_assumption(Prover.RX.instantiate({'c':x}), Prover.RX, {'c':x})
         return self.add_mp(self._lines[step2].formula.second, step3, step2)
-        
+
         # Task 10.6
 
     def add_free_instantiation(self, instantiation: Union[Formula, str],
@@ -508,31 +508,53 @@ class Prover:
             assert not is_z_and_number(variable)
         assert original.free_variables().issuperset(substitution_map.keys())
         assert instantiation == original.substitute(substitution_map)
-        temp_variables = {}
-        new_variables = {}
         
-        #Produce intermediary dictionaries and perform universal generalization over all keys in substitution map
-        for original_variable in substitution_map:
-            temp_variable = next(fresh_variable_name_generator)
-            temp_variables[original_variable] = temp_variable
-            new_variables[temp_variable] = substitution_map[original_variable]
-            line_number = self.add_ug(Formula('A', original_variable, self._lines[line_number].formula), line_number)
+        nested = False
+        for variable1 in substitution_map:
+            variables = substitution_map[variable1].variables() | substitution_map[variable1].constants()
+            for variable2 in substitution_map:
+                if not variable1 == variable2:
+                    if variable2 in variables:
+                        nested = True
+                        break
         
-        #Universal instantiation to replace all original variables with temporary variables
-        for _ in substitution_map:
-            quantified_variable = self._lines[line_number].formula.variable
-            new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: Term(temp_variables[quantified_variable])})
-            line_number = self.add_universal_instantiation(new_formula, line_number, temp_variables[quantified_variable])
+        if nested:
+            temp_variables = {}
+            new_variables = {}
+            
+            #Complex case - Produce intermediary dictionaries and perform universal generalization over all keys in substitution map
+            for original_variable in substitution_map:
+                temp_variable = next(fresh_variable_name_generator)
+                temp_variables[original_variable] = temp_variable
+                new_variables[temp_variable] = substitution_map[original_variable]
+                line_number = self.add_ug(Formula('A', original_variable, self._lines[line_number].formula), line_number)
+            
+            #Universal instantiation to replace all original variables with temporary variables
+            for _ in substitution_map:
+                quantified_variable = self._lines[line_number].formula.variable
+                new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: Term(temp_variables[quantified_variable])})
+                line_number = self.add_universal_instantiation(new_formula, line_number, temp_variables[quantified_variable])
+            
+            #Universal generalization over all temporary variables
+            for temp_variable in new_variables:
+                line_number = self.add_ug(Formula('A', temp_variable, self._lines[line_number].formula), line_number)
+            
+            #Universal instantiation to replace all temporary variables with desired variables
+            for _ in new_variables:
+                quantified_variable = self._lines[line_number].formula.variable
+                new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: new_variables[quantified_variable]})
+                line_number = self.add_universal_instantiation(new_formula, line_number, new_variables[quantified_variable])
         
-        #Universal generalization over all temporary variables
-        for temp_variable in new_variables:
-            line_number = self.add_ug(Formula('A', temp_variable, self._lines[line_number].formula), line_number)
-        
-        #Universal instantiation to replace all temporary variables with desired variables
-        for _ in new_variables:
-            quantified_variable = self._lines[line_number].formula.variable
-            new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: new_variables[quantified_variable]})
-            line_number = self.add_universal_instantiation(new_formula, line_number, new_variables[quantified_variable])
+        else:
+            #Simple case - Universal instantiation over all original variables
+            for variable in substitution_map:
+                line_number = self.add_ug(Formula('A', variable, self._lines[line_number].formula), line_number)
+            
+            #Universal instantiation to replace them with desired variables
+            for _ in substitution_map:
+                quantified_variable = self._lines[line_number].formula.variable
+                new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: substitution_map[quantified_variable]})
+                line_number = self.add_universal_instantiation(new_formula, line_number, substitution_map[quantified_variable])
         return line_number
         # Task 10.7
 
@@ -619,7 +641,7 @@ class Prover:
         equality2 = self._lines[line_number2].formula
         assert is_equality(equality2.root)
         assert equality1.arguments[1] == equality2.arguments[0]
-        
+
         x, y = equality1.arguments
         z = equality2.arguments[1]
         inst_map = {'R': Formula('=',[x,Term('_')]), 'c': y, 'd': z}
@@ -672,10 +694,10 @@ class Prover:
             assert equality.arguments[0] == current_term
             current_term = equality.arguments[1]
         assert chained.arguments[1] == current_term
-        
+
         step0 = line_numbers[0]
         equality1 = self._lines[step0].formula
-        
+
         for line in line_numbers[1:]:
             equality2 = self._lines[line].formula
             x, y = equality1.arguments
