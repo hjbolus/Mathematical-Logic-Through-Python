@@ -582,8 +582,19 @@ def prove_russell_paradox(print_as_proof_forms: bool = False) -> Proof:
         `~predicates.prover.Prover.AXIOMS`.
     """
     prover = Prover({COMPREHENSION_AXIOM}, print_as_proof_forms)
-    # Task 10.13
+    COMPREHENSION_AXIOM.instantiate({'R': Formula.parse('~In(_,_)')})
+    step1 = prover.add_instantiated_assumption(COMPREHENSION_AXIOM.instantiate({'R': Formula.parse('~In(_,_)')}), COMPREHENSION_AXIOM, {'R': Formula.parse('~In(_,_)')})
+    inst_map = {'R': Formula.parse('((In(_,y)->~In(_,_))&(~In(_,_)->In(_,y)))]'), 
+                'c': Term.parse('y'), 
+                'x': 'x'}
+    step2 = prover.add_instantiated_assumption(Prover.UI.instantiate(inst_map), Prover.UI, inst_map)
+    step3 = prover.add_tautology('(((In(y,y)->~In(y,y))&(~In(y,y)->In(y,y)))->(P()&~P()))')
+    step4 = prover.add_tautological_implication('(Ax[((In(x,y)->~In(x,x))&(~In(x,x)->In(x,y)))]->((z=z&~z=z)&(Hegel()->Sux(balls))))', {step2, step3})
+    step5 = prover.add_existential_derivation('((z=z&~z=z)&(Hegel()->Sux(balls)))', step1, step4)
+    step6 = prover.add_tautological_implication('(Hegel()->Sux(balls))', {step5})
+    step7 = prover.add_tautological_implication('(z=z&~z=z)', {step5})
     return prover.qed()
+    # Task 10.13
 
 def _prove_not_exists_not_implies_all(variable: str, formula: Formula,
                                       print_as_proof_forms: bool = False) -> \
