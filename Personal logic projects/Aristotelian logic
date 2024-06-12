@@ -197,3 +197,4 @@ class Syllogism:
     
     def to_predicate_logic(self):
         pass
+
