@@ -23,6 +23,39 @@ class Proposition:
     def __eq__(self, other):
         return isinstance(other, Proposition) and str(self) == str(other)
 
+    def contrary(self):
+        if self.copula == 'a':
+            copula = 'e'
+        elif self.copula == 'e':
+            copula = 'a'
+        elif self.copula == 'i':
+            copula = 'o'
+        else:
+            copula = 'i'
+        return Proposition(self.first, copula, self.second)
+    
+    def contradiction(self):
+        if self.copula == 'a':
+            copula = 'o'
+        elif self.copula == 'e':
+            copula = 'i'
+        elif self.copula == 'i':
+            copula = 'e'
+        else:
+            copula = 'a'
+        return Proposition(self.first, copula, self.second)
+        
+    def subaltern(self):
+        if self.copula == 'a':
+            copula = 'i'
+        elif self.copula == 'e':
+            copula = 'o'
+        elif self.copula == 'i':
+            copula = 'a'
+        else:
+            copula = 'e'
+        return Proposition(self.first, copula, self.second)
+
 class Syllogism:
     major: Proposition
     minor: Proposition
