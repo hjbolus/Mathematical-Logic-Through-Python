@@ -1,13 +1,73 @@
+from syllogisms import *
 from itertools import product
-import syllogisms
+
+end_points = ['Barbara', 'Darapti', 'Darii', 'Barbari']
+
+def reduce_syllogism(chain: list):
+    syllogism = chain[-1]
+    
+    obverse = syllogism.obverse()
+    if not obverse in chain:
+        chain.append(obverse)
+        return chain
+        
+    converse = syllogism.converse()
+    if not converse in chain:
+        chain.append(converse)
+        return chain
+    
+    major_contraposition, minor_contraposition = syllogism.contrapositions()
+    if not major_contraposition in chain:
+        chain.append(major_contraposition)
+        return chain
+
+    if not minor_contraposition in chain:
+        chain.append(minor_contraposition)
+        return chain
+        
+    else:
+        chain.append(None)
+        return chain
+
 counter = 0
+valid_chains = []
+invalid_chains = []
 for figure in ['1','2','3', '4']:
     print("************************Figure: ", figure, "******************************")
     for copulae in product(['a','e','i','o'], repeat=3):
         syllogism =  Syllogism.from_terms_figure_and_copulae('S','M','P', figure, copulae)
-        judgement = 'Valid' if syllogism.is_valid() else 'Invalid'
-        print(syllogism, '\n', judgement, '\n')
-        if syllogism.is_valid():
-            counter+=1
-    print('\n\n')
-print(f'There are {counter} valid syllogisms')
+        chain = []
+        chain.append(syllogism)
+        while chain[-1] and chain[-1].mood not in end_points:
+            chain = reduce_syllogism(chain)
+        if chain[-1] and chain[-1].mood in end_points:
+            valid_chains.append(chain)
+        else:
+            invalid_chains.append(chain)
+
+# ['Barbara']
+# ['Barbari']
+# ['Darii']
+# ['Darapti']
+# ['Datisi', 'Darii']
+# ['Bocardo', 'Barbara']
+# ['Fesapo', 'Felapton', 'Barbari']
+# ['Fresison', 'Ferio', 'Datisi', 'Darii']
+# ['Baroco', 'Festino', 'Ferison', 'Darii']
+# ['Festino', 'Baroco', 'Bocardo', 'Barbara']
+# ['Camestros', 'Cesaro', 'Celaront', 'Darapti']
+# ['Ferison', 'Festino', 'Baroco', 'Bocardo', 'Barbara']
+# ['Calemos', 'Camestros', 'Cesaro', 'Celaront', 'Darapti']
+# ['Cesaro', 'Camestros', 'Calemos', 'Fesapo', 'Felapton', 'Barbari']
+# ['Bamalip', 'Bamalip', 'Camestros', 'Cesaro', 'Celaront', 'Darapti']
+# ['Cesare', 'Camestres', 'Calemes', 'Festino', 'Baroco', 'Bocardo', 'Barbara']
+# ['Celaront', 'Cesaro', 'Camestros', 'Calemos', 'Fesapo', 'Felapton', 'Barbari']
+# ['Celarent', 'Cesare', 'Camestres', 'Calemes', 'Fresison', 'Ferio', 'Datisi', 'Darii']
+# ['Felapton', 'Fesapo', 'Bamalip', 'Bamalip', 'Camestros', 'Cesaro', 'Celaront', 'Darapti']
+# ['Dimatis', 'Disamis', 'Cesare', 'Camestres', 'Calemes', 'Festino', 'Baroco', 'Bocardo', 'Barbara']
+# ['Ferio', 'Fresison', 'Dimatis', 'Disamis', 'Cesare', 'Camestres', 'Calemes', 'Festino', 'Baroco', 'Bocardo', 'Barbara']
+# ['Disamis', 'Dimatis', 'Camestres', 'Cesare', 'Celarent', 'Dimatis', 'Disamis', 'Ferio', 'Fresison', 'Calemes', 'Camestres', 'Cesare', 'Celarent', 'Festino', 'Baroco', 'Bocardo', 'Barbara']
+# ['Camestres', 'Cesare', 'Celarent', 'Dimatis', 'Disamis', 'Ferio', 'Fresison', 'Calemes', 'Camestres', 'Cesare', 'Celarent', 'Disamis', 'Dimatis', 'Ferison', 'Festino', 'Baroco', 'Bocardo', 'Barbara']
+
+#Calemes did not reduce: ['Calemes', 'Camestres', 'Cesare', 'Celarent', 'Disamis', 'Dimatis', 'Camestres', 'Cesare', 'Celarent', 'Dimatis', 'Disamis', 'Ferio', 'Fresison', None]
+#All others did not reduce
