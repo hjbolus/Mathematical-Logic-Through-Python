@@ -10,4 +10,4 @@ connected graphs of valid syllogisms, that this allows us to think of one syllog
 "reduced" to another, and claims that this is the central desired property of a proof theory. Here I
 implement his descriptions of obversion, conversion, and contraposition to check that all valid 
 syllogisms eventually reduce to one of four chosen as end points, and that no invalid syllogisms do.
-Interestingly, Calemes (AEE-4) does not, but this is only because of early termination.
+Interestingly, Calemes (AEE-4) does not, but this is because of early termination.
