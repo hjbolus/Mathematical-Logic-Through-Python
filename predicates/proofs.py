@@ -907,7 +907,8 @@ class Proof:
             return [line.antecedent_line_number, line.conditional_line_number]
         else:
             return []
-
+            # personal task
+    
     def uncite_duplicate_lines(self) -> list:
         """Adjusts the assumptions of any line that cites a previous line with a duplicate
        so that its assumptions cite the first occurence of that formula."""
