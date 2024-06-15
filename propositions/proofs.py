@@ -7,8 +7,10 @@
 """Proofs by deduction in Propositional Logic."""
 from __future__ import annotations
 from typing import AbstractSet, FrozenSet, List, Mapping, Optional, Sequence, Set, Tuple, Union
-from logic_utils import frozen, memoized_parameterless_method
-from syntax import *
+import sys
+sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
+from propositions.logic_utils import frozen, memoized_parameterless_method
+from propositions.syntax import *
 
 #: A mapping from variable names to formulas.
 SpecializationMap = Mapping[str, Formula]
@@ -448,6 +450,89 @@ class Proof:
         return False
         # Task 4.6c
 
+    def cited_by(self, line_number) -> list:
+        """Returns a list of lines cited by the given line"""
+        
+        line = self.lines[line_number]
+        if not line.is_assumption():
+            return line.assumptions
+        # personal task
+    
+    def uncite_duplicate_lines(self) -> list:
+        """Adjusts the assumptions of any line that cites a previous line with a duplicate
+       so that its assumptions cite the first occurence of that formula."""
+        
+        formulae = [line.formula for line in self.lines]
+        duplicates = []
+        first_occurrences = {}
+        for line_number in range(len(formulae)):
+            formula = formulae[line_number]
+            if formula in formulae[:line_number]:
+                duplicates.append(line_number)
+                if formula not in first_occurrences:
+                    first_occurrences[formula] = line_number
+        
+        replacement_dict = {}
+        for line_number in duplicates:
+            replacement_dict[line_number] = first_occurrences[self.lines[line_number].formula]
+        
+        adjusted = []
+        for line in self.lines:     
+            if line.is_assumption():
+                adjusted.append(line)
+            else:
+                adjusted.append(Proof.Line(line.formula, line.rule, [replacement_dict[assumption] if assumption in replacement_dict else assumption for assumption in line.assumptions]))
+        return Proof(self.statement, self.rules, adjusted)
+        # personal task
+
+    def uncited_lines(self) -> list:
+        """Returns a list of all lines that are not cited by the conclusion, or 
+        not cited by any line that is cited by the conclusion."""
+        #add conclusion
+        cited = {len(self.lines)-1}
+        temp = list(cited)
+        #starting with conclusion, add cited lines to temp and cited. Follow up by finding lines cited by temp, and reset temp.
+        while temp:
+            current = temp.pop()
+            new = self.cited_by(current)
+            if new:
+                for i in new:
+                    temp.insert(0,i)
+                    cited.add(i)
+        return set(range(len(self.lines)))-cited
+        # personal task
+
+    def remove_uncited_lines(self) -> Proof:
+        """Returns a new Proof of the same conclusion, with unncessary lines removed."""
+        lines_to_remove = self.uncited_lines()
+        lines_to_keep = sorted(set(i for i in range(len(self.lines))) - set(lines_to_remove))
+        
+        line_dict = {lines_to_keep[i]:i for i in range(len(lines_to_keep))}
+        
+        new_lines = []
+        for line in range(len(self.lines)):
+            if line not in lines_to_remove:
+                new_lines.append(self.lines[line])
+                line = self.lines[line]
+            
+        renumbered_lines = []
+        for line in new_lines:
+            if line.is_assumption():
+                renumbered_lines.append(line)
+            else:
+                renumbered_lines.append(Proof.Line(line.formula, line.rule, [line_dict[assumption] if assumption in line_dict else assumption for assumption in line.assumptions]))
+        return Proof(self.statement, self.rules, renumbered_lines)
+        # personal task
+
+    def clean(self) -> Proof:
+        """Returns a proof with no duplicated or unnecessary lines."""
+        proof = self.uncite_duplicate_lines()
+        proof = self.remove_uncited_lines()
+        print(f'Removed {len(self.lines)-len(proof.lines)} lines')
+        assert self.is_valid() == proof.is_valid()
+        return proof
+        # personal task
+
 def prove_specialization(proof: Proof, specialization: InferenceRule) -> Proof:
     """Converts the given proof of an inference rule to a proof of the given
     specialization of that inference rule.
@@ -575,7 +660,7 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
         rules allowed in the two given proofs but without the "lemma" rule
         proved by `lemma_proof`.
     """
-    assert main_proof.is_valid()
+    assert main_proof.is_valid(), print('\n******************** invalid proof ********************\n', main_proof, '\n***************************************************\n')
     assert lemma_proof.is_valid()
 
     new_rules = set(rule for rule in main_proof.rules if rule != lemma_proof.statement).union(lemma_proof.rules)
@@ -600,7 +685,7 @@ def parse_inference_rule(text:str) -> InferenceRule:
     # Personal task
 
 def parse_proof(text: list[str]) -> Proof:
-    """Converts a copied-and-pasted string from a proof object, with triple quotes added to the start and end , into a Proof object"""
+    """Converts a copied-and-pasted string from a proof object, with triple quotes added to the start and end, into a Proof object"""
 
     text = text.split('\n')
 
@@ -670,102 +755,6 @@ def find_first_instance_of_formula(proof: Proof, formula: Formula) -> int:
     for i in range(len(proof.lines)):
         if proof.lines[i].formula == formula:
             return i
-    # Personal task
-
-def remove_line(proof: Proof, line_number: int) -> Proof:
-    """Removes the specified line and updates assumption citations to match new line numbers"""
-
-    citations = find_citation_tree(proof, line_number)
-    first_use = find_first_instance_of_formula(proof, proof.lines[line_number].formula)
-
-    new_lines = []
-    for i in range(len(proof.lines)):
-        if i != line_number:
-            line = proof.lines[i]
-            if not line.is_assumption():
-                new_assumptions = []
-                for j in line.assumptions:
-                    if j == line_number:
-                        j = first_use
-                    elif j > line_number:
-                        j -= 1
-                    new_assumptions.append(j)
-                line = Proof.Line(line.formula, line.rule, new_assumptions)
-            new_lines.append(line)
-    new_proof = Proof(proof.statement, proof.rules, new_lines)
-    assert new_proof.is_valid(), print(new_proof)
-    return new_proof
-    # Personal task
-
-# def find_citation_tree(proof: Proof, line_number: int) -> list:
-#     """Returns a list of numbers representing lines that cite the given line"""
-
-#     line_list = []
-#     for i in range(len(proof.lines)):
-#         line = proof.lines[i]
-#         if not line.is_assumption():
-#             if line_number in line.assumptions:
-#                 line_list.append(i)
-#     return line_list
-    # Personal task
-    
-def find_citation_tree(proof: Proof, line_number: int) -> set:
-    """Traces citations back from the conclusion, finding all lines which are actually used to prove the conclusion.
-    Returns them as a set."""
-
-    set1 = set()
-
-    if proof.lines[line_number].is_assumption():
-        return set()
-    else:
-        new_citations = proof.lines[line_number].assumptions
-
-    for i in new_citations:
-        set1.add(i)
-        if not proof.lines[i].is_assumption() and proof.lines[i].assumptions:
-            set1 = set1 | find_citation_tree(proof, i)
-    return set1
-    # Personal task
-
-def find_uncited_lines(proof: Proof) -> list:
-    """Takes the difference between the set of line numbers in the proof and the set of line numbers in its citation tree.
-    Returns them as a reversed list."""
-
-    length = len(proof.lines)-1
-    return sorted(set(range(length)) - find_citation_tree(proof, length))[::-1]
-    # Personal task
-
-def find_duplicate_lines(proof: Proof) -> list:
-    """Returns a list of lists of line numbers with matching formulae"""
-
-    list1 = []
-    list2 = []
-    for i in range(len(proof.lines)-1):
-        if not i in list1:
-            list2 = []
-            formula = proof.lines[i].formula
-            for j in range(len(proof.lines)-1):
-                if i != j:
-                    if formula == proof.lines[j].formula:
-                        list2.append(j)
-            if list2:
-                [list1.append(i) for i in list2]
-    return sorted(list1)[::-1]
-    # Personal task
-
-def clean_proof(proof: Proof) -> Proof:
-    """Removes duplicate lines and unused lines, adjusting citations to match new line numbers"""
-
-    if u:= find_duplicate_lines(proof):
-        for i in u:
-            proof = remove_line(proof, i)
-
-    if d := find_uncited_lines(proof):
-        for i in d:
-            proof = remove_line(proof, i)
-
-    assert proof.is_valid()
-    return proof
     # Personal task
 
 def convert_inference_rule_operators(inferencerule: InferenceRule, operator_function) -> InferenceRule:
