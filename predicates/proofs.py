@@ -15,7 +15,6 @@ from propositions.semantics import is_tautology as is_propositional_tautology
 from predicates.syntax import *
 from propositions.proofs import clean_proof as clean_propositional_proof
 
-
 #: A mapping from constant names, variable names, and relation names to
 #: terms, variable names, and formulas respectively.
 InstantiationMap = Mapping[str, Union[Term, str, Formula]]
@@ -288,10 +287,11 @@ class Schema:
                         raise Schema.BoundVariableError(e.variable_name, relation_name)
 
             else: #parameterless
-                replacement_template = relations_instantiation_map[relation_name]
-                if sinners := replacement_template.free_variables() & bound_variables:
-                    raise Schema.BoundVariableError(sinners.pop(), relation_name)
-                formula = replacement_template
+                if relation_name in relations_instantiation_map:
+                    replacement_template = relations_instantiation_map[relation_name]
+                    if sinners := replacement_template.free_variables() & bound_variables:
+                        raise Schema.BoundVariableError(sinners.pop(), relation_name)
+                    formula = replacement_template
 
         elif is_equality(root):
             formula = formula.substitute(constants_and_variables_instantiation_map)
@@ -438,6 +438,9 @@ class Schema:
                 assert isinstance(instantiation_map[key], Formula)
                 relations_instantiation_map[key] = instantiation_map[key]
 
+        if not (constants_and_variables_instantiation_map or relations_instantiation_map):
+            return self.formula
+
         bound_variables = set()
         try:
             return Schema._instantiate_helper(self.formula, constants_and_variables_instantiation_map, relations_instantiation_map, bound_variables)
@@ -445,7 +448,7 @@ class Schema:
             print(f'BoundVariableError: {e.variable_name} is bound within the relation {e.relation_name}')
             return None
         # Task 9.4
-    
+
     @staticmethod
     def parse(string: str) -> Schema:
         """Parses the given valid string representation into a Schema.
@@ -574,7 +577,7 @@ class Proof:
             # Task 9.5
 
         @staticmethod
-        def parse(string: str) -> AssumptionLine:
+        def parse(string: str) -> Proof.AssumptionLine:
             """Parses the given valid string representation into an AssumptionLine.
 
             Parameters:
@@ -587,16 +590,18 @@ class Proof:
             assumption, instantiation_map = string.split('(Assumption ')[1].split(' instantiated with ')
             assumption = Schema.parse(assumption)
             instantiation_map = instantiation_map[1:-2].replace("'",'').replace(' ','').split(',')
-            if len(instantiation_map) > 2:
+            if instantiation_map and instantiation_map[0]:
                 instantiation_map = dict(i.split(':') for i in instantiation_map)
                 for key in instantiation_map:
-                    if not is_variable(instantiation_map[key]):
+                    if is_constant(key):
                         instantiation_map[key] = Term.parse(instantiation_map[key])
+                    elif is_relation(key):
+                        instantiation_map[key] = Formula.parse(instantiation_map[key])
             else:
                 instantiation_map = {}
             return Proof.AssumptionLine(formula, assumption, instantiation_map)
             # personal task
-    
+
     @frozen
     class MPLine:
         """An immutable proof line justified by the Modus Ponens (MP) inference
@@ -669,7 +674,7 @@ class Proof:
             # Task 9.6
 
         @staticmethod
-        def parse(string: str) -> MPLine:
+        def parse(string: str) -> Proof.MPLine:
             """Parses the given valid string representation into an MPLine.
 
             Parameters:
@@ -750,7 +755,7 @@ class Proof:
             # Task 9.7
 
         @staticmethod
-        def parse(string: str) -> UGLine:
+        def parse(string: str) -> Proof.UGLine:
             """Parses the given valid string representation into a UGLine.
 
             Parameters:
@@ -814,7 +819,7 @@ class Proof:
             # Task 9.9
 
         @staticmethod
-        def parse(string: str) -> TautologyLine:
+        def parse(string: str) -> Proof.TautologyLine:
             """Parses the given valid string representation into a TautologyLine.
 
             Parameters:
@@ -873,11 +878,11 @@ class Proof:
         """
         conclusion, suffix = string.split('\n', maxsplit=1)
         conclusion = Formula.parse(conclusion.split('Proof of ')[1].split(' from')[0])
-        
+
         assumptions, suffix = suffix.split('Lines:\n')
         if assumptions:
             assumptions = [Schema.parse(i) for i in assumptions.replace('  ','').split('\n') if i]
-        
+
         lines = [i for i in suffix.split('\n')[:-1]]
         new_lines = []
         for line in lines:
@@ -891,7 +896,117 @@ class Proof:
                 new_lines.append(Proof.UGLine.parse(line))
         return Proof(assumptions, conclusion, new_lines)
         # personal task
+
+    def cited_by(self, line_number) -> list:
+        """Returns a list of lines cited by the given line"""
+        
+        line = self.lines[line_number]
+        if isinstance(line, Proof.UGLine):
+            return [line.nonquantified_line_number]
+        elif isinstance(line, Proof.MPLine):
+            return [line.antecedent_line_number, line.conditional_line_number]
+        else:
+            return []
+
+    def uncite_duplicate_lines(self) -> list:
+        """Adjusts the assumptions of any line that cites a previous line with a duplicate
+       so that its assumptions cite the first occurence of that formula."""
+        
+        formulae = [line.formula for line in self.lines]
+        duplicates = []
+        first_occurrences = {}
+        for line_number in range(len(formulae)):
+            formula = formulae[line_number]
+            if formula in formulae[:line_number]:
+                duplicates.append(line_number)
+                if formula not in first_occurrences:
+                    first_occurrences[formula] = line_number
+        
+        replacement_dict = {}
+        for line_number in duplicates:
+            replacement_dict[line_number] = first_occurrences[self.lines[line_number].formula]
+        
+        adjusted = []
+        for line in self.lines:            
+            if isinstance(line, Proof.UGLine):
+                if line.nonquantified_line_number in replacement_dict:
+                    adjusted.append(Proof.UGLine(line.formula, 
+                                              replacement_dict[line.nonquantified_line_number]))
+                else:
+                    adjusted.append(line)
+            elif isinstance(line, Proof.MPLine):
+                if line.antecedent_line_number in replacement_dict:
+                    antecedent = replacement_dict[line.antecedent_line_number]
+                else:
+                    antecedent = line.antecedent_line_number
+                    
+                if line.conditional_line_number in replacement_dict:
+                    conditional = replacement_dict[line.conditional_line_number]
+                else:
+                    conditional = line.conditional_line_number
+                    
+                adjusted.append(Proof.MPLine(line.formula,
+                                              antecedent,
+                                              conditional))
+            else:
+                adjusted.append(line)
+        return Proof(self.assumptions, self.conclusion, adjusted)     
+        # personal task
     
+    def uncited_lines(self) -> list:
+        """Returns a list of all lines that are not cited by the conclusion, or 
+        not cited by any line that is cited by the conclusion."""
+        #add conclusion
+        cited = {len(self.lines)-1}
+        temp = list(cited)
+        #starting with conclusion, add cited lines to temp and cited. Follow up by finding lines cited by temp, and reset temp.
+        while temp:
+            current = temp.pop()
+            new = self.cited_by(current)
+            for i in new:
+                temp.insert(0,i)
+                cited.add(i)
+        
+        return set(range(len(self.lines)))-cited
+        # personal task
+    
+    def remove_uncited_lines(self) -> Proof:
+        """Returns a new Proof of the same conclusion, with unncessary lines removed."""
+        lines_to_remove = self.uncited_lines()
+        lines_to_keep = sorted(set(i for i in range(len(self.lines))) - set(lines_to_remove))
+        
+        line_dict = {lines_to_keep[i]:i for i in range(len(lines_to_keep))}
+        
+        new_lines = []
+        for line in range(len(self.lines)):
+            if line not in lines_to_remove:
+                new_lines.append(self.lines[line])
+                line = self.lines[line]
+            
+        renumbered_lines = []
+        for line in new_lines:
+            if isinstance(line, Proof.UGLine):
+                renumbered_lines.append(Proof.UGLine(line.formula, 
+                                              line_dict[line.nonquantified_line_number]))
+                
+            elif isinstance(line, Proof.MPLine):
+                renumbered_lines.append(Proof.MPLine(line.formula,
+                                              line_dict[line.antecedent_line_number],
+                                              line_dict[line.conditional_line_number]))
+            else:
+                renumbered_lines.append(line)
+        return Proof(self.assumptions, self.conclusion, renumbered_lines)
+        # personal task
+    
+    def clean(self) -> Proof:
+        """Returns a proof with no duplicated or unnecessary lines."""
+        proof = self.uncite_duplicate_lines()
+        proof = self.remove_uncited_lines()
+        print(f'Removed {len(self.lines)-len(proof.lines)} lines')
+        assert self.is_valid() == proof.is_valid()
+        return proof
+        # personal task
+
 from propositions.proofs import Proof as PropositionalProof, \
                                 InferenceRule as PropositionalInferenceRule, \
                                 SpecializationMap as \
@@ -1065,6 +1180,10 @@ def prove_tautology(tautology: Formula) -> Proof:
     return _prove_from_skeleton_proof(tautology, skeleton_proof, substitution_map)
     # Task 9.12
 
+def is_tautology(formula: Union[Formula, str]) -> bool:
+    if isinstance(formula, str):
+        formula = Formula.parse(formula)
+    return is_propositional_tautology(formula.propositional_skeleton()[0])
 
 
 # consider changing instantiate so that it can accept either strings or Term items as values of dict (not just strings for variable values and Term objects for constant values)
