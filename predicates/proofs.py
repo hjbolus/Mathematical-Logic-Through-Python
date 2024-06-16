@@ -13,7 +13,6 @@ import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
 from propositions.semantics import is_tautology as is_propositional_tautology
 from predicates.syntax import *
-from propositions.proofs import clean_proof as clean_propositional_proof
 
 #: A mapping from constant names, variable names, and relation names to
 #: terms, variable names, and formulas respectively.
@@ -899,7 +898,7 @@ class Proof:
 
     def cited_by(self, line_number) -> list:
         """Returns a list of lines cited by the given line"""
-        
+
         line = self.lines[line_number]
         if isinstance(line, Proof.UGLine):
             return [line.nonquantified_line_number]
@@ -907,12 +906,11 @@ class Proof:
             return [line.antecedent_line_number, line.conditional_line_number]
         else:
             return []
-            # personal task
-    
+
     def uncite_duplicate_lines(self) -> list:
         """Adjusts the assumptions of any line that cites a previous line with a duplicate
        so that its assumptions cite the first occurence of that formula."""
-        
+
         formulae = [line.formula for line in self.lines]
         duplicates = []
         first_occurrences = {}
@@ -922,16 +920,16 @@ class Proof:
                 duplicates.append(line_number)
                 if formula not in first_occurrences:
                     first_occurrences[formula] = line_number
-        
+
         replacement_dict = {}
         for line_number in duplicates:
             replacement_dict[line_number] = first_occurrences[self.lines[line_number].formula]
-        
+
         adjusted = []
-        for line in self.lines:            
+        for line in self.lines:
             if isinstance(line, Proof.UGLine):
                 if line.nonquantified_line_number in replacement_dict:
-                    adjusted.append(Proof.UGLine(line.formula, 
+                    adjusted.append(Proof.UGLine(line.formula,
                                               replacement_dict[line.nonquantified_line_number]))
                 else:
                     adjusted.append(line)
@@ -940,22 +938,22 @@ class Proof:
                     antecedent = replacement_dict[line.antecedent_line_number]
                 else:
                     antecedent = line.antecedent_line_number
-                    
+
                 if line.conditional_line_number in replacement_dict:
                     conditional = replacement_dict[line.conditional_line_number]
                 else:
                     conditional = line.conditional_line_number
-                    
+
                 adjusted.append(Proof.MPLine(line.formula,
                                               antecedent,
                                               conditional))
             else:
                 adjusted.append(line)
-        return Proof(self.assumptions, self.conclusion, adjusted)     
+        return Proof(self.assumptions, self.conclusion, adjusted)
         # personal task
-    
+
     def uncited_lines(self) -> list:
-        """Returns a list of all lines that are not cited by the conclusion, or 
+        """Returns a list of all lines that are not cited by the conclusion, or
         not cited by any line that is cited by the conclusion."""
         #add conclusion
         cited = {len(self.lines)-1}
@@ -967,29 +965,29 @@ class Proof:
             for i in new:
                 temp.insert(0,i)
                 cited.add(i)
-        
+
         return set(range(len(self.lines)))-cited
         # personal task
-    
+
     def remove_uncited_lines(self) -> Proof:
         """Returns a new Proof of the same conclusion, with unncessary lines removed."""
         lines_to_remove = self.uncited_lines()
         lines_to_keep = sorted(set(i for i in range(len(self.lines))) - set(lines_to_remove))
-        
+
         line_dict = {lines_to_keep[i]:i for i in range(len(lines_to_keep))}
-        
+
         new_lines = []
         for line in range(len(self.lines)):
             if line not in lines_to_remove:
                 new_lines.append(self.lines[line])
                 line = self.lines[line]
-            
+
         renumbered_lines = []
         for line in new_lines:
             if isinstance(line, Proof.UGLine):
-                renumbered_lines.append(Proof.UGLine(line.formula, 
+                renumbered_lines.append(Proof.UGLine(line.formula,
                                               line_dict[line.nonquantified_line_number]))
-                
+
             elif isinstance(line, Proof.MPLine):
                 renumbered_lines.append(Proof.MPLine(line.formula,
                                               line_dict[line.antecedent_line_number],
@@ -998,7 +996,7 @@ class Proof:
                 renumbered_lines.append(line)
         return Proof(self.assumptions, self.conclusion, renumbered_lines)
         # personal task
-    
+
     def clean(self) -> Proof:
         """Returns a proof with no duplicated or unnecessary lines."""
         proof = self.uncite_duplicate_lines()
@@ -1133,7 +1131,7 @@ def _prove_from_skeleton_proof(formula: Formula,
         `PROPOSITIONAL_AXIOMATIC_SYSTEM_SCHEMAS` via only assumption lines and
         MP lines.
     """
-    skeleton_proof = clean_propositional_proof(skeleton_proof)
+    skeleton_proof = skeleton_proof.clean()
     assert len(skeleton_proof.statement.assumptions) == 0 and \
            skeleton_proof.rules.issubset(PROPOSITIONAL_AXIOMATIC_SYSTEM) and \
            skeleton_proof.is_valid()
@@ -1177,7 +1175,7 @@ def prove_tautology(tautology: Formula) -> Proof:
     skeleton, substitution_map = tautology.propositional_skeleton()
     assert is_propositional_tautology(skeleton)
     assert skeleton.operators().issubset({'T', 'F', '->', '~', '&', '|'})
-    skeleton_proof = clean_propositional_proof(prove_propositional_tautology(skeleton))
+    skeleton_proof = prove_propositional_tautology(skeleton).clean()
     return _prove_from_skeleton_proof(tautology, skeleton_proof, substitution_map)
     # Task 9.12
 
