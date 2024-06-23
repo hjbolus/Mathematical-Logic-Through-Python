@@ -68,7 +68,6 @@ def remove_assumption(proof: Proof, assumption: Formula,
                 if antecedent_line_number and conditional_line_number:
                     break
             assert isinstance(antecedent_line_number, int) and isinstance(conditional_line_number, int), print('Missing antecedent or conditional. Antecedent_line_number: ', antecedent_line_number, 'conditional_line_number: ', conditional_line_number)
-            #consider adding antecedent or conditional if not present?
             step = prover.add_tautological_implication(consequent, {antecedent_line_number, conditional_line_number})
             
         else:
@@ -89,12 +88,9 @@ def remove_assumption(proof: Proof, assumption: Formula,
                         new_nonquantified_line_number = line_number
                         break
                 step1 = prover.add_ug(Formula('A', line.formula.variable, new_nonquantified_formula), new_nonquantified_line_number)
-                try:
-                    inst_map = {'Q': assumption, 'R': nonquantified_formula.substitute({line.formula.variable:Term('_')}), 'x': line.formula.variable}
-                    step2 = prover.add_instantiated_assumption(Prover.US.instantiate(inst_map), Prover.US, inst_map)
-                    step = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
-                except:
-                    pass
+                inst_map = {'Q': assumption, 'R': nonquantified_formula.substitute({line.formula.variable:Term('_')}), 'x': line.formula.variable}
+                step2 = prover.add_instantiated_assumption(Prover.US.instantiate(inst_map), Prover.US, inst_map)
+                step = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
             else:
                 step = prover.add_ug(line.formula, nonquantified_line_number)
                 step = prover.add_tautological_implication(Formula('->', assumption, line.formula), {step})
