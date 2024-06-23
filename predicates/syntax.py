@@ -862,7 +862,10 @@ class Formula:
 
         if not substitution_map:
             return self
-
+        
+        if not set(substitution_map.keys()) & (self.variables() | self.constants()):
+            return self
+        
         if sinners:= set.union(*[value.variables() for value in substitution_map.values()]) & forbidden_variables:
             raise ForbiddenVariableError(sinners.pop())
 
