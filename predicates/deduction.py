@@ -74,8 +74,8 @@ def remove_assumption(proof: Proof, assumption: Formula,
             assert isinstance(line, Proof.UGLine)
             nonquantified_line_number = None
             nonquantified_formula = proof.lines[line.nonquantified_line_number].formula
-            new_nonquantified_formula = Formula('->', assumption, nonquantified_formula)
             new_nonquantified_line_number = None
+            new_nonquantified_formula = Formula('->', assumption, nonquantified_formula)
             
             for line_number, temp_line in enumerate(prover._lines):
                 if temp_line.formula == nonquantified_formula:
