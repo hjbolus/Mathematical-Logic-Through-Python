@@ -120,6 +120,9 @@ def prove_by_way_of_contradiction(proof: Proof, assumption: Formula) -> Proof:
     for line in proof.lines:
         if isinstance(line, Proof.UGLine):
             assert line.formula.variable not in assumption.free_variables()
+    conditional_proof = remove_assumption(proof, assumption)
+    prover = Prover(conditional_proof.assumptions)
+    conditional = prover.add_proof(conditional_proof.conclusion, conditional_proof)
+    prover.add_tautological_implication(Formula('~', assumption), {conditional})
+    return prover.qed()
     # Task 11.2
-
-formula = Formula.parse('(Ax[(Greek(x)->Human(x))]->(Greek(x)->Mortal(x))))')
