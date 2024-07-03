@@ -600,7 +600,7 @@ def _prove_not_exists_not_implies_all(variable: str, formula: Formula,
                                       print_as_proof_forms: bool = False) -> \
         Proof:
     """Proves that
-    ``'(~E``\ `variable`\ ``[~``\ `formula`\ ``]->A``\ `variable`\ ``[``\ `formula`\ ``])'``.
+    '(~E`variable`[~`formula`]->A`variable`[`formula`])'.
 
     Parameters:
         variable: variable name for the quantifications in the formula to be
@@ -615,13 +615,24 @@ def _prove_not_exists_not_implies_all(variable: str, formula: Formula,
         `~predicates.prover.Prover.AXIOMS`.
     """
     assert is_variable(variable)
+    if isinstance(formula, str):
+        formula = Formula.parse(formula)
+    not_exists_not_schema = Schema(Formula('~',Formula('E',variable,Formula('~',formula))))
+
+    prover = Prover({not_exists_not_schema},False)
+    inst_map = {'R': Formula('~',formula.substitute({variable: Term('_')})), 'c': Term(variable), 'x': variable}
+    step1 = prover.add_instantiated_assumption(Prover.EI.instantiate(inst_map), Prover.EI, inst_map)
+    step2 = prover.add_assumption(not_exists_not_schema.formula)
+    step3 = prover.add_tautological_implication(formula, {step1, step2})
+    step4 = prover.add_ug(Formula('A', variable, formula), step3)
+    return remove_assumption(prover.qed(), not_exists_not_schema.formula, print_as_proof_forms)
     # Optional Task 11.4a
 
 def _prove_exists_not_implies_not_all(variable: str, formula: Formula,
                                       print_as_proof_forms: bool = False) -> \
         Proof:
     """Proves that
-    ``'(E``\ `variable`\ ``[~``\ `formula`\ ``]->~A``\ `variable`\ ``[``\ `formula`\ ``])'``.
+    `'(E`variable`[~`formula`]->~A`variable`[`formula`])'`.
 
     Parameters:
         variable: variable name for the quantifications in the formula to be
@@ -636,12 +647,26 @@ def _prove_exists_not_implies_not_all(variable: str, formula: Formula,
         `~predicates.prover.Prover.AXIOMS`.
     """
     assert is_variable(variable)
+    if isinstance(formula, str):
+        formula = Formula.parse(formula)
+    exists_not_schema = Schema(Formula('E', variable, Formula('~', formula)))
+    
+    prover = Prover({exists_not_schema}, False)
+    step1 = prover.add_assumption(exists_not_schema.formula)
+    inst_map = {'R': formula.substitute({variable: Term('_')}), 'c': Term(variable), 'x': variable}
+    step2 = prover.add_instantiated_assumption(Prover.UI.instantiate(inst_map), Prover.UI, inst_map)
+    step3 = prover.add_tautological_implication(Formula('->', Formula('~', formula), Formula('~', Formula('A', variable, formula))), {step2})
+    step4 = prover.add_ug(Formula('A', variable, prover._lines[step3].formula), step3)
+    inst_map = {'Q': Formula('~', Formula('A', variable, formula)), 'R': Formula('~', formula).substitute({variable: Term('_')}), 'x': variable}
+    step5 = prover.add_instantiated_assumption(Prover.ES.instantiate(inst_map), Prover.ES, inst_map)
+    step6 = prover.add_tautological_implication(Formula('~', Formula('A', variable, formula)), {step1, step4, step5})
+    return remove_assumption(prover.qed(), exists_not_schema.formula, print_as_proof_forms)
     # Optional Task 11.4b
 
 def prove_not_all_iff_exists_not(variable: str, formula: Formula,
                                  print_as_proof_forms: bool = False) -> Proof:
     """Proves that
-    `equivalence_of`\ ``('(~A``\ `variable`\ ``[``\ `formula`\ ``]', 'E``\ `variable`\ ``[~``\ `formula`\ ``]')``.
+    `equivalence_of`('(~A`variable`[`formula`]', 'E`variable`[~`formula`]')`.
 
     Parameters:
         variable: variable name for the quantifications in the formula to be
@@ -656,4 +681,24 @@ def prove_not_all_iff_exists_not(variable: str, formula: Formula,
         `~predicates.prover.Prover.AXIOMS`.
     """
     assert is_variable(variable)
+    prover = Prover({})
+    proof1 = _prove_not_exists_not_implies_all(variable, formula)
+    step1 = prover.add_proof(proof1.conclusion, proof1)
+    proof2 = _prove_exists_not_implies_not_all(variable, formula)
+    step2 = prover.add_proof(proof2.conclusion, proof2)
+# I guess they wanted the conclusion in long form because they don't assume you implemented <-> in your propositional tautology prover. Use the line below if you have.
+#     step3 = prover.add_tautological_implication(Formula('<->', proof2.conclusion.second, proof2.conclusion.first), {step1, step2})
+    conclusion = Formula('&',
+        Formula('->',
+            Formula('~',
+                Formula('A', variable, formula)),
+            Formula('E', variable, 
+                Formula('~', formula))),
+        Formula('->',
+            Formula('E', variable, 
+                Formula('~', formula)),
+            Formula('~',
+                Formula('A', variable, formula))))
+    step3 = prover.add_tautological_implication(conclusion, {step1, step2})
+    return prover.qed()
     # Optional Task 11.4c
