@@ -242,7 +242,6 @@ class Term:
             or a variable name (e.g., ``'x12'``), then the parsed prefix will be
             that entire name (and not just a part of it, such as ``'x1'``).
         """
-    def _parse_prefix(string: str) -> Tuple[Term, str]:
         if string:
             sample = string[0]
             if is_constant(sample) or is_variable(sample):
