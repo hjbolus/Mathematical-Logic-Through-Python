@@ -680,25 +680,16 @@ def prove_not_all_iff_exists_not(variable: str, formula: Formula,
         A valid proof of the above formula via
         `~predicates.prover.Prover.AXIOMS`.
     """
+    import predicates.prenex
     assert is_variable(variable)
     prover = Prover({})
     proof1 = _prove_not_exists_not_implies_all(variable, formula)
     step1 = prover.add_proof(proof1.conclusion, proof1)
     proof2 = _prove_exists_not_implies_not_all(variable, formula)
     step2 = prover.add_proof(proof2.conclusion, proof2)
-# I guess they wanted the conclusion in long form because they don't assume you implemented <-> in your propositional tautology prover. Use the line below if you have.
-#     step3 = prover.add_tautological_implication(Formula('<->', proof2.conclusion.second, proof2.conclusion.first), {step1, step2})
-    conclusion = Formula('&',
-        Formula('->',
-            Formula('~',
-                Formula('A', variable, formula)),
-            Formula('E', variable, 
-                Formula('~', formula))),
-        Formula('->',
-            Formula('E', variable, 
-                Formula('~', formula)),
-            Formula('~',
-                Formula('A', variable, formula))))
+    conclusion = predicates.prenex.equivalence_of(
+                    Formula('~', Formula('A', variable, formula)),
+                    Formula('E', variable, Formula('~', formula)))
     step3 = prover.add_tautological_implication(conclusion, {step1, step2})
     return prover.qed()
     # Optional Task 11.4c
