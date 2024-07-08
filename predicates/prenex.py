@@ -293,7 +293,47 @@ def _pull_out_quantifications_across_negation(formula: Formula) -> \
         True
     """
     assert is_unary(formula.root)
-    # Task 11.6
+    
+    if is_quantifier_free(formula):
+        prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+        prover.add_tautology(equivalence_of(formula, formula))
+        new_formula = formula
+    else:
+        variable = formula.first.variable
+        statement = formula.first.statement
+        
+        if formula.first.root == 'A':
+            transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[0]
+            quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1] #consider switching this to -1
+            new_formula = Formula('E', formula.first.variable, Formula('~', statement))
+        else:
+            transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[1]
+            quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2] #and this to -2
+            new_formula = Formula('A', formula.first.variable, Formula('~', statement))
+        
+        new_statement, new_statement_proof = _pull_out_quantifications_across_negation(new_formula.statement)
+        prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+        
+        if is_quantifier_free(statement):
+            inst_map = {'R': statement.substitute({variable: Term('_')}), 'x': variable}
+            prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+        
+        else:
+            step1 = prover.add_proof(new_statement_proof.conclusion, new_statement_proof)
+            inst_map = {'R': Formula('~', statement).substitute({variable: Term('_')}),
+                        'Q': new_statement.substitute({variable: Term('_')}),
+                        'x': variable,
+                        'y': variable}
+            step2 = prover.add_instantiated_assumption(quantification_schema.instantiate(inst_map), quantification_schema, inst_map)
+            step3 = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
+            new_formula = prover._lines[step3].formula.first.second
+
+            inst_map = {'R': statement.substitute({variable: Term('_')}),
+                        'x': variable}
+            step4 = prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+            step5 = prover.add_tautological_implication(equivalence_of(formula, new_formula), {step3, step4})
+    return new_formula, prover.qed()
+    # Task 11.6    # Task 11.6
 
 def _pull_out_quantifications_from_left_across_binary_operator(formula:
                                                                Formula) -> \
