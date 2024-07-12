@@ -141,6 +141,72 @@ def has_uniquely_named_variables(formula: Formula) -> bool:
 
     return has_uniquely_named_variables_helper(formula)
 
+def _uniquely_rename_quantified_variables_helper(formula):
+    root = formula.root
+    if is_binary(root):
+        first, proof1 = _uniquely_rename_quantified_variables_helper(formula.first)
+        second, proof2 = _uniquely_rename_quantified_variables_helper(formula.second)
+        new_formula = Formula(root, first, second)
+        steps = set()
+        prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+        if proof1:
+            step1 = prover.add_proof(proof1.conclusion, proof1)
+            steps.add(step1)
+        if proof2:
+            step2 = prover.add_proof(proof2.conclusion, proof2)
+            steps.add(step2)
+        step3 = prover.add_tautological_implication(equivalence_of(formula, new_formula), steps)
+
+        proof = prover.qed()
+        return new_formula, proof
+
+    elif is_unary(root):
+        new_formula, proof_of_affirmative = _uniquely_rename_quantified_variables_helper(formula.first)
+        new_formula = Formula('~', new_formula)
+
+        proof_of_negative = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+        step1 = proof_of_negative.add_proof(proof_of_affirmative.conclusion, proof_of_affirmative)
+        step2 = proof_of_negative.add_tautological_implication(equivalence_of(formula, new_formula), {step1})
+        proof = proof_of_negative.qed()
+        return new_formula, proof
+
+    elif is_relation(root) or is_equality(root):
+        return formula, None
+
+    elif is_quantifier(root):
+        if root == 'E':
+            schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+        else:
+            schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
+
+        variable = formula.variable
+        new_variable = next(fresh_variable_name_generator)
+        inner_sub_formula, proof_of_inner_subs = _uniquely_rename_quantified_variables_helper(formula.statement)
+        new_formula = Formula(root, new_variable, inner_sub_formula.substitute({variable: Term(new_variable)}))
+
+        if proof_of_inner_subs:
+            #then I just need to change one variable to go from inner_sub_formula to new_formula
+            prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+            step1 = prover.add_proof(proof_of_inner_subs.conclusion, proof_of_inner_subs)
+            inst_map = {
+                    'R': formula.statement.substitute({variable:Term('_')}),
+                    'Q': inner_sub_formula.substitute({variable: Term('_')}),
+                    'x': variable,
+                    'y': new_variable}
+            step2 = prover.add_instantiated_assumption(schema.instantiate(inst_map), schema, inst_map)
+            step3 = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
+
+        else:
+            #prove formula -> new_formula
+            prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+            inst_map = {'R': formula.statement.substitute({variable: Term('_')}),
+                        'Q': formula.statement.substitute({variable: Term('_')}),
+                        'x': variable,
+                        'y': new_variable}
+            step2 = prover.add_instantiated_assumption(schema.instantiate(inst_map), schema, inst_map)
+            step3 = prover.add_tautological_implication(prover._lines[step2].formula.second, {step2})
+        return new_formula, prover.qed()
+
 def _uniquely_rename_quantified_variables(formula: Formula) -> \
         Tuple[Formula, Proof]:
     """Converts the given formula to an equivalent formula with uniquely named
@@ -249,8 +315,7 @@ def _uniquely_rename_quantified_variables(formula: Formula) -> \
                             'y': new_variable}
                 step2 = prover.add_instantiated_assumption(schema.instantiate(inst_map), schema, inst_map)
                 step3 = prover.add_tautological_implication(prover._lines[step2].formula.second, {step2})
-            return new_formula, prover.qed()
-    # Task 11.5
+            return new_formula, prover.qed()    # Task 11.5
 
 def _pull_out_quantifications_across_negation(formula: Formula) -> \
         Tuple[Formula, Proof]:
