@@ -142,8 +142,7 @@ def has_uniquely_named_variables(formula: Formula) -> bool:
     return has_uniquely_named_variables_helper(formula)
 
 def _uniquely_rename_quantified_variables_helper(formula):
-
-    root = formula.root    
+    root = formula.root
     if is_binary(root):
         first, proof1 = _uniquely_rename_quantified_variables_helper(formula.first)
         second, proof2 = _uniquely_rename_quantified_variables_helper(formula.second)
@@ -157,36 +156,36 @@ def _uniquely_rename_quantified_variables_helper(formula):
             step2 = prover.add_proof(proof2.conclusion, proof2)
             steps.add(step2)
         step3 = prover.add_tautological_implication(equivalence_of(formula, new_formula), steps)
-        
+
         proof = prover.qed()
         return new_formula, proof
-    
+
     elif is_unary(root):
         new_formula, proof_of_affirmative = _uniquely_rename_quantified_variables_helper(formula.first)
         new_formula = Formula('~', new_formula)
-        
+
         proof_of_negative = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
         step1 = proof_of_negative.add_proof(proof_of_affirmative.conclusion, proof_of_affirmative)
         step2 = proof_of_negative.add_tautological_implication(equivalence_of(formula, new_formula), {step1})
         proof = proof_of_negative.qed()
         return new_formula, proof
-        
+
     elif is_relation(root) or is_equality(root):
         return formula, None
-        
+
     elif is_quantifier(root):
         if root == 'E':
             schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
         else:
             schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
-            
+
         variable = formula.variable
         new_variable = next(fresh_variable_name_generator)
         inner_sub_formula, proof_of_inner_subs = _uniquely_rename_quantified_variables_helper(formula.statement)
         new_formula = Formula(root, new_variable, inner_sub_formula.substitute({variable: Term(new_variable)}))
-        
+
         if proof_of_inner_subs:
-            #use the given schema to make one additional substitution while quantifying over the new variable
+            #then I just need to change one variable to go from inner_sub_formula to new_formula
             prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
             step1 = prover.add_proof(proof_of_inner_subs.conclusion, proof_of_inner_subs)
             inst_map = {
@@ -198,7 +197,7 @@ def _uniquely_rename_quantified_variables_helper(formula):
             step3 = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
 
         else:
-            #degenerate case where R = Q
+            #prove formula -> new_formula
             prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
             inst_map = {'R': formula.statement.substitute({variable: Term('_')}),
                         'Q': formula.statement.substitute({variable: Term('_')}),
@@ -255,7 +254,7 @@ def _uniquely_rename_quantified_variables(formula: Formula) -> \
     else:
         return _uniquely_rename_quantified_variables_helper(formula)
     # Task 11.5
-    
+
 def _pull_out_quantifications_across_negation(formula: Formula) -> \
         Tuple[Formula, Proof]:
     """Converts the given formula with uniquely named variables of the form
@@ -293,7 +292,7 @@ def _pull_out_quantifications_across_negation(formula: Formula) -> \
         True
     """
     assert is_unary(formula.root)
-    
+
     if is_quantifier_free(formula):
         prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
         prover.add_tautology(equivalence_of(formula, formula))
@@ -301,7 +300,7 @@ def _pull_out_quantifications_across_negation(formula: Formula) -> \
     else:
         variable = formula.first.variable
         statement = formula.first.statement
-        
+
         if formula.first.root == 'A':
             transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[0]
             quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1] #consider switching this to -1
@@ -310,14 +309,14 @@ def _pull_out_quantifications_across_negation(formula: Formula) -> \
             transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[1]
             quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2] #and this to -2
             new_formula = Formula('A', formula.first.variable, Formula('~', statement))
-        
+
         new_statement, new_statement_proof = _pull_out_quantifications_across_negation(new_formula.statement)
         prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
-        
+
         if is_quantifier_free(statement):
             inst_map = {'R': statement.substitute({variable: Term('_')}), 'x': variable}
             prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
-        
+
         else:
             step1 = prover.add_proof(new_statement_proof.conclusion, new_statement_proof)
             inst_map = {'R': Formula('~', statement).substitute({variable: Term('_')}),
@@ -333,21 +332,21 @@ def _pull_out_quantifications_across_negation(formula: Formula) -> \
             step4 = prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
             step5 = prover.add_tautological_implication(equivalence_of(formula, new_formula), {step3, step4})
     return new_formula, prover.qed()
-    # Task 11.6    # Task 11.6
+    # Task 11.6
 
 def _pull_out_quantifications_from_left_across_binary_operator(formula:
                                                                Formula) -> \
         Tuple[Formula, Proof]:
     """Converts the given formula with uniquely named variables of the form
-    `'(`Q1`\ `x1`[`Q2`\ `x2`[`...\ `Qn`\ `xn`[`inner_first`]`...\ `]]`*`\ `second`)'`
+    `'(`Q1x1`[`Q2x2`[`... `Qnxn`[`inner_first`]`... `]]`*``second`)'`
     to an equivalent formula of the form
-    `'`Q'1`\ `x1`[`Q'2`\ `x2`[`...\ `Q'n`\ `xn`[(`inner_first`\ `*`\ `second`)]`...\ `]]'`
+    `'`Q'1x1`[`Q'2x2`[`... `Q'nxn`[(`inner_first``*``second`)]`... `]]'`
     and proves the equivalence of these two formulas.
 
     Parameters:
         formula: formula with uniquely named variables to convert, whose root
             is a binary operator, i.e., which is of the form
-            `'(`Q1`\ `x1`[`Q2`\ `x2`[`...\ `Qn`\ `xn`[`inner_first`]`...\ `]]`*`\ `second`)'`
+            `'(`Q1``x1`[`Q2``x2`[`... `Qn``xn`[`inner_first`]`... `]]`*``second`)'`
             where `*` is a binary operator, `n`>=0, each `Qi` is a quantifier,
             each `xi` is a variable name, and `inner_first` does not start with
             a quantifier.
@@ -355,7 +354,7 @@ def _pull_out_quantifications_from_left_across_binary_operator(formula:
     Returns:
         A pair. The first element of the pair is a formula equivalent to the
         given formula, but of the form
-        `'`Q'1`\ `x1`[`Q'2`\ `x2`[`...\ `Q'n`\ `xn`[(`inner_first`\ `*`\ `second`)]`...\ `]]'`
+        `'`Q'1``x1`[`Q'2``x2`[`... `Q'n``xn`[(`inner_first``*``second`)]`... `]]'`
         where each `Q'i` is a quantifier, and where the operator `*`, the `xi`
         variable names, `inner_first`, and `second` are the same as in the given
         formula. The second element of the pair is a proof of the equivalence of
@@ -378,8 +377,104 @@ def _pull_out_quantifications_from_left_across_binary_operator(formula:
         ...     ADDITIONAL_QUANTIFICATION_AXIOMS)
         True
     """
+    root = formula.root
     assert has_uniquely_named_variables(formula)
-    assert is_binary(formula.root)
+    assert is_binary(root)
+
+    if not is_quantifier(formula.first.root):
+        prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+        prover.add_tautology(equivalence_of(formula, formula))
+        new_formula = formula
+
+    else:
+        quantifier = formula.first.root
+        variable = formula.first.variable
+        first_statement = formula.first.statement
+        second = formula.second
+        assert formula == Formula(root, Formula(quantifier, variable, first_statement), second)
+        new_formula = Formula(quantifier, variable, Formula(root, first_statement, second))
+        new_statement = new_formula.statement
+        prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+
+        if root == '&':
+            if quantifier == 'A':
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[2]
+                #(∀x[φ(x)]&ψ)<->∀x[(φ(x)&ψ)]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
+                #((φ(x)<->ψ(x))->(∀x[φ(x)]<->∀y[ψ(y)]))
+
+            else:
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[3]
+                #(∃x[φ(x)]&ψ)<->∃x[(φ(x)&ψ)]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+                #((φ(x)<->ψ(x))->(∃x[φ(x)]<->∃y[ψ(y)]))
+
+        elif root == '|':
+            if quantifier == 'A':
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[6]
+                #(∀x[φ(x)]|ψ)<->∀x[(φ(x)|ψ)]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
+                ##((φ(x)<->ψ(x))->(∀x[φ(x)]<->∀y[ψ(y)]))
+
+            else:
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[7]
+                #(∃x[φ(x)]|ψ)<->∃x[(φ(x)|ψ)]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+                #((φ(x)<->ψ(x))->(∃x[φ(x)]<->∃y[ψ(y)])
+
+        elif root == '->':
+            if quantifier == 'A':
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[10]
+                #(∀x[φ(x)]→ψ) is equivalent to ∃x[(φ(x)→ψ)]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+                ##((φ(x)<->ψ(x))->(∀x[φ(x)]<->∀y[ψ(y)]))
+                new_formula = Formula('E', variable, Formula(root, first_statement, second))
+
+            else:
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[11]
+                #(∃x[φ(x)]→ψ) is equivalent to ∀x[(φ(x)→ψ)]’
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
+                #((φ(x)<->ψ(x))->(∃x[φ(x)]<->∃y[ψ(y)])
+                new_formula = Formula('A', variable, Formula(root, first_statement, second))
+
+
+        if is_binary(new_formula.statement.root):
+            intermediate_formula, intermediate_proof = _pull_out_quantifications_from_left_across_binary_operator(new_formula.statement)
+#             step1: prove inner transformation
+            step1 = prover.add_proof(intermediate_proof.conclusion, intermediate_proof)
+            if is_quantifier_free(intermediate_formula):
+                #prove (Ax[T(x)]&S()) <-> Ax[T(x)&S()]
+                inst_map = {'R': first_statement.substitute({variable: Term('_')}),
+                        'Q': second.substitute({variable: Term('_')}),
+                        'x': variable}
+                prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+
+            else:
+#                 step2: prove (Ax[T(x)]&S()) <-> Ax[(T(x)&S())] -> Ay[(Ax[T(x)]&S())] <-> Ay[Ax[(T(x)&S())]] by quantification schema
+                inst_map = {'R': new_formula.statement.substitute({variable: Term('_')}),
+                            'Q': intermediate_formula.substitute({variable: Term('_')}),
+                            'x': variable,
+                            'y': variable}
+                step2 = prover.add_instantiated_assumption(quantification_schema.instantiate(inst_map), quantification_schema, inst_map)
+
+#                 step3: prove Ay[(Ax[T(x)]&S())] <-> Ay[Ax[(T(x)&S())]] by mp from step1 and step2
+                step3 = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
+
+#                 step4: prove (Ay[Ax[T(x)]]&S()) <-> Ay[(Ax[T(x)]&S())] by transfer schema
+                inst_map = {'R': first_statement.substitute({variable: Term('_')}),
+                            'Q': second.substitute({variable: Term('_')}),
+                            'x': variable}
+                step4 = prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+
+#                 step5: taut imp from step3 and step4 to prove (Ay[Ax[T(x)]]&S()) <-> Ay[Ax[(T(x)&S())]]
+                new_formula = prover._lines[step3].formula.first.second
+                step5 = prover.add_tautological_implication(equivalence_of(formula, new_formula), {step3, step4})
+        else:
+            inst_map = {'R': first_statement.substitute({variable: Term('_')}),
+                        'Q': second.substitute({variable: Term('_')}),
+                        'x': variable}
+            prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+    return new_formula, prover.qed()
     # Task 11.7a
 
 def _pull_out_quantifications_from_right_across_binary_operator(formula:
@@ -425,8 +520,84 @@ def _pull_out_quantifications_from_right_across_binary_operator(formula:
         ...     ADDITIONAL_QUANTIFICATION_AXIOMS)
         True
     """
+    root = formula.root
     assert has_uniquely_named_variables(formula)
-    assert is_binary(formula.root)
+    assert is_binary(root)
+
+    if not is_quantifier(formula.second.root):
+        prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+        prover.add_tautology(equivalence_of(formula, formula))
+        new_formula = formula
+
+    else:
+        quantifier = formula.second.root
+        variable = formula.second.variable
+        second_statement = formula.second.statement
+        first = formula.first
+        assert formula == Formula(root, first, Formula(quantifier, variable, second_statement))
+        new_formula = Formula(quantifier, variable, Formula(root, first, second_statement))
+        new_statement = new_formula.statement
+        prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+
+        if root == '&':
+            if quantifier == 'A':
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[4]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
+
+            else:
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[5]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+
+        elif root == '|':
+            if quantifier == 'A':
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[8]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
+
+            else:
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[9]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+
+        elif root == '->':
+            if quantifier == 'A':
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[12]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2]
+
+            else:
+                transfer_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[13]
+                quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+
+        if is_binary(new_formula.statement.root):
+            intermediate_formula, intermediate_proof = _pull_out_quantifications_from_right_across_binary_operator(new_formula.statement)
+            step1 = prover.add_proof(intermediate_proof.conclusion, intermediate_proof)
+            
+            if is_quantifier_free(intermediate_formula):
+                inst_map = {'R': second_statement.substitute({variable: Term('_')}),
+                        'Q': first.substitute({variable: Term('_')}),
+                        'x': variable}
+                prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+
+            else:
+                inst_map = {'R': new_formula.statement.substitute({variable: Term('_')}),
+                            'Q': intermediate_formula.substitute({variable: Term('_')}),
+                            'x': variable,
+                            'y': variable}
+                step2 = prover.add_instantiated_assumption(quantification_schema.instantiate(inst_map), quantification_schema, inst_map)
+
+                step3 = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
+
+                inst_map = {'R': second_statement.substitute({variable: Term('_')}),
+                            'Q': first.substitute({variable: Term('_')}),
+                            'x': variable}
+                step4 = prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+
+                new_formula = prover._lines[step3].formula.first.second
+                step5 = prover.add_tautological_implication(equivalence_of(formula, new_formula), {step3, step4})
+        else:
+            inst_map = {'R': second_statement.substitute({variable: Term('_')}),
+                        'Q': first.substitute({variable: Term('_')}),
+                        'x': variable}
+            prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
+    return new_formula, prover.qed()
     # Task 11.7b
 
 def _pull_out_quantifications_across_binary_operator(formula: Formula) -> \
