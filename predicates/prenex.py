@@ -788,14 +788,24 @@ def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
     """
     for variable in formula.variables():
         assert not is_z_and_number(variable)
-
-    renamed_formula, renaming_proof = _uniquely_rename_quantified_variables(formula)
-    prenex_formula, prenex_proof = _to_prenex_normal_form_from_uniquely_named_variables(renamed_formula)
     
     prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
-    step1 = prover.add_proof(renaming_proof.conclusion, renaming_proof)
-    step2 = prover.add_proof(prenex_proof.conclusion, prenex_proof)
-    step3 = prover.add_tautological_implication(equivalence_of(formula, prenex_formula), {step1, step2})
+    
+    if is_in_prenex_normal_form(formula):
+        prover.add_tautology(equivalence_of(formula, formula))
+        prenex_formula = formula
+        
+    elif has_uniquely_named_variables(formula):
+        prenex_formula, prenex_proof = _to_prenex_normal_form_from_uniquely_named_variables(renamed_formula)
+        prover.add_proof(prenex_proof)
+        
+    else:
+        renamed_formula, renaming_proof = _uniquely_rename_quantified_variables(formula)
+        prenex_formula, prenex_proof = _to_prenex_normal_form_from_uniquely_named_variables(renamed_formula)
+        
+        step1 = prover.add_proof(renaming_proof.conclusion, renaming_proof)
+        step2 = prover.add_proof(prenex_proof.conclusion, prenex_proof)
+        step3 = prover.add_tautological_implication(equivalence_of(formula, prenex_formula), {step1, step2})
 
     return prenex_formula, prover.qed().clean()
     # Task 11.10
