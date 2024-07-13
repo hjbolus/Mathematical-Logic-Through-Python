@@ -569,7 +569,7 @@ def _pull_out_quantifications_from_right_across_binary_operator(formula:
         if is_binary(new_formula.statement.root):
             intermediate_formula, intermediate_proof = _pull_out_quantifications_from_right_across_binary_operator(new_formula.statement)
             step1 = prover.add_proof(intermediate_proof.conclusion, intermediate_proof)
-            
+
             if is_quantifier_free(intermediate_formula):
                 inst_map = {'R': second_statement.substitute({variable: Term('_')}),
                         'Q': first.substitute({variable: Term('_')}),
@@ -645,6 +645,34 @@ def _pull_out_quantifications_across_binary_operator(formula: Formula) -> \
     """
     assert has_uniquely_named_variables(formula)
     assert is_binary(formula.root)
+    
+    formula1, proof1 = _pull_out_quantifications_from_left_across_binary_operator(formula)
+    prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+    step1 = prover.add_proof(proof1.conclusion, proof1)
+
+    inner_second = formula1
+    quantification_layers = []
+    while is_quantifier(inner_second.root):
+        quantification_layers.append((inner_second.root, inner_second.variable))
+        inner_second = inner_second.statement
+    
+    formula2, proof2 = _pull_out_quantifications_from_right_across_binary_operator(inner_second)
+    stepx = prover.add_proof(proof2.conclusion, proof2)
+    stepz = None
+    for quantifier, variable in quantification_layers[::-1]:
+        quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2] if quantifier == 'A' else ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+        inst_map = {'R': inner_second.substitute({variable: Term('_')}),
+                    'Q': formula2.substitute({variable: Term('_')}),
+                    'x': variable,
+                    'y': variable}
+        stepy = prover.add_instantiated_assumption(quantification_schema.instantiate(inst_map), quantification_schema, inst_map)
+        stepz = prover.add_mp(prover._lines[stepy].formula.second, stepx, stepy)
+        inner_second = prover._lines[stepz].formula.first.first
+        formula2 = prover._lines[stepz].formula.first.second
+        stepx = stepz
+    if stepz:
+        prover.add_tautological_implication(equivalence_of(formula, formula2), {step1, stepz})
+    return formula2, prover.qed()
     # Task 11.8
 
 def _to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
@@ -680,6 +708,52 @@ def _to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
         True
     """
     assert has_uniquely_named_variables(formula)
+
+    prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+    if is_in_prenex_normal_form(formula):
+        new_formula = formula
+        prover.add_tautology(equivalence_of(formula, new_formula))
+        
+    else:
+        root = formula.root
+
+        if is_unary(root):
+            new_first, new_first_proof = _to_prenex_normal_form_from_uniquely_named_variables(formula.first)
+            new_formula, new_proof = _pull_out_quantifications_across_negation(Formula('~', new_first))
+            
+            step1 = prover.add_proof(new_first_proof.conclusion, new_first_proof)
+            step2 = prover.add_proof(new_proof.conclusion, new_proof)
+            
+            if not new_proof.conclusion == equivalence_of(formula, new_formula):
+                step3 = prover.add_tautological_implication(equivalence_of(formula, new_formula), {step1, step2})
+            
+        elif is_binary(root):
+            new_first, new_first_proof = _to_prenex_normal_form_from_uniquely_named_variables(formula.first)
+            new_second, new_second_proof = _to_prenex_normal_form_from_uniquely_named_variables(formula.second)
+            new_formula, new_proof = _pull_out_quantifications_across_binary_operator(Formula(root, new_first, new_second))
+            
+            step1 = prover.add_proof(new_first_proof.conclusion, new_first_proof)
+            step2 = prover.add_proof(new_second_proof.conclusion, new_second_proof)
+            step3 = prover.add_tautological_implication(equivalence_of(formula, Formula(root, new_first, new_second)), {step1, step2})
+            step4 = prover.add_proof(new_proof.conclusion, new_proof)
+            step5 = prover.add_tautological_implication(equivalence_of(formula, new_formula), {step3, step4})
+            
+        elif is_quantifier(root):
+            variable = formula.variable
+            new_statement, new_statement_proof = _to_prenex_normal_form_from_uniquely_named_variables(formula.statement)
+            new_formula = Formula(root, formula.variable, new_statement)
+            
+            step1 = prover.add_proof(new_statement_proof.conclusion, new_statement_proof)
+
+            quantification_schema = ADDITIONAL_QUANTIFICATION_AXIOMS[-2] if root == 'A' else ADDITIONAL_QUANTIFICATION_AXIOMS[-1]
+            inst_map = {'R': formula.statement.substitute({variable: Term('_')}),
+                        'Q': new_statement.substitute({variable: Term('_')}),
+                        'x': variable,
+                        'y': variable}
+            step2 = prover.add_instantiated_assumption(quantification_schema.instantiate(inst_map), quantification_schema, inst_map)
+            step3 = prover.add_tautological_implication(prover._lines[step2].formula.second, {step1, step2})
+
+    return new_formula, prover.qed()
     # Task 11.9
 
 def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
@@ -714,4 +788,14 @@ def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
     """
     for variable in formula.variables():
         assert not is_z_and_number(variable)
+
+    renamed_formula, renaming_proof = _uniquely_rename_quantified_variables(formula)
+    prenex_formula, prenex_proof = _to_prenex_normal_form_from_uniquely_named_variables(renamed_formula)
+    
+    prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
+    step1 = prover.add_proof(renaming_proof.conclusion, renaming_proof)
+    step2 = prover.add_proof(prenex_proof.conclusion, prenex_proof)
+    step3 = prover.add_tautological_implication(equivalence_of(formula, prenex_formula), {step1, step2})
+
+    return prenex_formula, prover.qed().clean()
     # Task 11.10
