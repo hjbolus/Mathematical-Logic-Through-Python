@@ -197,9 +197,9 @@ class Model(Generic[T]):
                 else:
                     result = self.evaluate_formula(formula.second, assignment)
             elif root == '-&':
-                result = not (self.evaluate_formula(formula.first, assignment) and self.evaluate_formula(formula.second, assignment))
+                result = not (self.evaluate_formula(formula.first, assignment)) and not (self.evaluate_formula(formula.second, assignment))
             elif root == '-|':
-                result = not (self.evaluate_formula(formula.first, assignment) or self.evaluate_formula(formula.second, assignment))
+                result = not (self.evaluate_formula(formula.first, assignment)) or not (self.evaluate_formula(formula.second, assignment))
             elif root == '+':
                 result = self.evaluate_formula(formula.first, assignment) != self.evaluate_formula(formula.second, assignment)
             elif root == '<->':
