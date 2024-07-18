@@ -82,9 +82,9 @@ def evaluate(formula: Formula, model: Model) -> bool:
             else:
                 return evaluate(formula.second, model)
         elif formula.root == '-&':
-            return not (evaluate(formula.first, model) and evaluate(formula.second, model))
+            return not (evaluate(formula.first, model) and not evaluate(formula.second, model))
         elif formula.root == '-|':
-            return not (evaluate(formula.first, model) or evaluate(formula.second, model))
+            return not (evaluate(formula.first, model) or not evaluate(formula.second, model))
         elif formula.root == '+':
             return evaluate(formula.first, model) != evaluate(formula.second, model)
         elif formula.root == '<->':
