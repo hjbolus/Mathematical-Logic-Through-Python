@@ -96,7 +96,7 @@ The section on propositional logic includes many similar classes, methods, and f
 ### Truth tables
 Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
 
-`In [1]: all_models(('p', 'q'))` 
+`In [1]: all_models(('p', 'q'))`  
 `Out [1]: [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]`   
 
 By evaluating a given function over these, functions implemented in the Semantics file can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function print_truth_table() prints a truth table for any formula.
@@ -104,12 +104,12 @@ By evaluating a given function over these, functions implemented in the Semantic
 `In [2]: formula = Formula.parse('~(q7&p)')`  
 `In [2]: print_truth_table(formula)`  
 `Out[2]: `  
->| p | q7 | ~(q7&p) |
->|---|----|---------|
->| F | F  | T       |
->| F | T  | T       |
->| T | F  | T       |
->| T | T  | F       |
+| p | q7 | ~(q7&p) |
+|---|----|---------|
+| F | F  | T       |
+| F | T  | T       |
+| T | F  | T       |
+| T | T  | F       |
 
 
 
