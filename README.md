@@ -17,7 +17,7 @@ This textbook provides code skeletons for functions that, when implemented, auto
 ## Models
 Models are stored as `Model` objects, initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class Model return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class Model determines whether or not all of the formulas evaluate to true in the given model. 
 
-Although functions and equality are allowed by default, the file `functions` includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equisastisfiable relations and equivalent relation interpretations.
+Although functions and equality are allowed by default, the file `functions` includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equivalent relations and relation interpretations.
 
 ## Axioms, schemas, and assumptions
   Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
