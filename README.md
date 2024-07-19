@@ -9,6 +9,7 @@ The Python package that results from the completed code automates a variety of t
 
 `>>> formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')
 Ax[(Man(x)->Mortal(x))]`
+
 `>>> print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')
 Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`
 
