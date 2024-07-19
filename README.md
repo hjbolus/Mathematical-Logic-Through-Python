@@ -25,7 +25,7 @@ The Python package that results from the completed code automates a variety of t
 
 `In [5]: proof = prove_syllogism()`  
 `In [6]: proof`  
-`Out [6]: Proof of Mortal(aristotle) from assumptions/axioms:`  
+`Out [6]: Proof of Mortal(aristotle) from assumptions/axioms:\n`
 `  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]`  
 `  Schema: Man(aristotle) [templates: none]`  
 `  ...`  
