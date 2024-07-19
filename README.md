@@ -1,4 +1,4 @@
-Read the official documentation here: https://www.logicthrupython.org/api/
+Read the official documentation here: https://www.logicthrupython.org/api/.
 I have added some utilities without changing the existing ones, so everything there should be accurate.
 
 The Python package that results from the completed code automates a variety of tasks in classical first order logic as well as propositional logic. 
