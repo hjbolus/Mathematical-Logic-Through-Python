@@ -7,36 +7,36 @@ The Python package that results from the completed code automates a variety of t
 ### Formulas
   In first order logic, Formulas are stored as objects of class Formula, which are composed of subformulas and terms (Term objects) in an expression tree or directed-acyclic graph structure. Term objects are either constants, variables, or functions. Terms and formula can be parsed from strings into objects of their respective type using the .parse() methods of their classes. For example,
 
-`>>> formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')
-Ax[(Man(x)->Mortal(x))]
->>> print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')
+`>>> formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')`
+`Ax[(Man(x)->Mortal(x))]`
+`>>> print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')
 Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`
 
 ### Axioms and schemas
   Axioms are implemented as Schema objects, which include a Formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
   
-`>>> schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')
->>> schema.instantiate({'R': Formula.parse('_=z'), 'c': Term('x'), 'd': Term('y')})
-(x=y->(x=z->y=z))`
+`>>> schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`
+`>>> schema.instantiate({'R': Formula.parse('_=z'), 'c': Term('x'), 'd': Term('y')})`
+`(x=y->(x=z->y=z))`
 
 ### Proofs
   Proofs are stored as Proof objects, and are composed of a set of assumptions (Schema objects), an ordered sequence of lines each of which contains a formula and justification, and a conclusion which is stated both at the outset and as the last line of the proof. The following short proof shows how this data structure is represented:
 
-`>>> proof = prove_syllogism()
->>> proof
-Proof of Mortal(aristotle) from assumptions/axioms:
-  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]
-  Schema: Man(aristotle) [templates: none]
-  ...
-  Schema: ((Ax[(R(x)->Q())]&Ex[R(x)])->Q()) [templates: Q, R, x]
-Lines:
-  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})
-  1) (Ax[(Man(x)->Mortal(x))]->(Man(aristotle)->Mortal(aristotle)))    (Assumption Schema: (Ax[R(x)]->R(c)) [templates: R, c, x] instantiated with {'R': (Man(_)->Mortal(_)), 'c': aristotle})
-  2) (Man(aristotle)->Mortal(aristotle))    (MP from lines 0 and 1)
-  3) Man(aristotle)    (Assumption Schema: Man(aristotle) [templates: none] instantiated with {})
-  4) Mortal(aristotle)    (MP from lines 3 and 2)
-QED
-`
+`>>> proof = prove_syllogism()`
+`>>> proof`
+`Proof of Mortal(aristotle) from assumptions/axioms:`
+`  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]`
+`  Schema: Man(aristotle) [templates: none]`
+`  ...`
+`  Schema: ((Ax[(R(x)->Q())]&Ex[R(x)])->Q()) [templates: Q, R, x]`
+`Lines:`
+`  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})`
+`  1) (Ax[(Man(x)->Mortal(x))]->(Man(aristotle)->Mortal(aristotle)))    (Assumption Schema: (Ax[R(x)]->R(c)) [templates: R, c, x] instantiated with {'R': (Man(_)->Mortal(_)), 'c': aristotle})`
+`  2) (Man(aristotle)->Mortal(aristotle))    (MP from lines 0 and 1)`
+`  3) Man(aristotle)    (Assumption Schema: Man(aristotle) [templates: none] instantiated with {})`
+`  4) Mortal(aristotle)    (MP from lines 3 and 2)`
+`QED`
+
   Moreover, the package can check the validity of the proof:
 
 `>>> proof.is_valid()
