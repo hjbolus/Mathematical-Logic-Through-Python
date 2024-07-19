@@ -49,7 +49,7 @@ Although functions and equality are allowed by default, the file `functions` inc
 `  4) Mortal(aristotle)    (MP from lines 3 and 2)`  
 `QED`  
 
-  Moreover, the package can check the validity of the proof:
+  The package can check the validity of the proof:
 
 `In [7]: proof.is_valid()`  
 
@@ -91,7 +91,7 @@ Moreover, any formula can be converted to prenex normal form using the function 
 Duplicate and uncited lines can be removed from proofs using the `clean()` method that I added.
 
 ### Prover objects
-It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
+It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These check for validity at each step, and allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
 
 FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
 
