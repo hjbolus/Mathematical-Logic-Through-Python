@@ -8,24 +8,30 @@ The Python package that results from the completed code automates a variety of t
   In first order logic, Formulas are stored as objects of class Formula, which are composed of subformulas and terms (Term objects) in an expression tree or directed-acyclic graph structure. Term objects are either constants, variables, or functions. Terms and formula can be parsed from strings into objects of their respective type using the .parse() methods of their classes. For example,
 
 `In [1]: formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')`  
+
 `Out [1]: Ax[(Man(x)->Mortal(x))]`  
 
 `In [2]: print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')`  
+
 `Out [2]:Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`  
 
 ### Axioms and schemas
   Axioms are implemented as Schema objects, which include a Formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
   
 `In [3]: schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`  
+
 `In [4]: schema.instantiate({'R': Formula.parse('_=z'), 'c': Term('x'), 'd': Term('y')})`  
+
 `Out [4]: (x=y->(x=z->y=z))`  
 
 ### Proofs
   Proofs are stored as Proof objects, and are composed of a set of assumptions (Schema objects), an ordered sequence of lines each of which contains a formula and justification, and a conclusion which is stated both at the outset and as the last line of the proof. The following short proof shows how this data structure is represented:
 
 `In [5]: proof = prove_syllogism()`  
+
 `In [6]: proof`  
-`Out [6]: Proof of Mortal(aristotle) from assumptions/axioms:\n`
+
+`Out [6]: Proof of Mortal(aristotle) from assumptions/axioms:`  
 `  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]`  
 `  Schema: Man(aristotle) [templates: none]`  
 `  ...`  
@@ -41,20 +47,22 @@ The Python package that results from the completed code automates a variety of t
   Moreover, the package can check the validity of the proof:
 
 `In [7]: proof.is_valid()`  
+
 `Out [7]: True`  
 
   And it can perform certain transformations on Proof objects, such as removing an assumption, or converting a proof from assumption P of a contradiction into a proof of ~P, without assumption P. For example:
 
-`>>> remove_assumption(proof, formula)
-``Proof of (Man(aristotle)->Mortal(aristotle)) from assumptions/axioms:
-``  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]
-``  ...
-``  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]
-``Lines:
-``  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})
-``  ...
-``  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)
-``QED`
+`In [8]: remove_assumption(proof, formula)
+`  
+`Out [8]: Proof of (Man(aristotle)->Mortal(aristotle)) from assumptions/axioms:
+`  `  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]
+`  `  ...
+`  `  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]
+`  `Lines:
+`  `  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})
+`  `  ...
+`  `  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)
+`  `QED`
 
 It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. 
 
