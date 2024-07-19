@@ -23,38 +23,38 @@ The Python package that results from the completed code automates a variety of t
 ### Proofs
   Proofs are stored as Proof objects, and are composed of a set of assumptions (Schema objects), an ordered sequence of lines each of which contains a formula and justification, and a conclusion which is stated both at the outset and as the last line of the proof. The following short proof shows how this data structure is represented:
 
-`>>> proof = prove_syllogism()`
-`>>> proof`
-`Proof of Mortal(aristotle) from assumptions/axioms:`
-`  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]`
-`  Schema: Man(aristotle) [templates: none]`
-`  ...`
-`  Schema: ((Ax[(R(x)->Q())]&Ex[R(x)])->Q()) [templates: Q, R, x]`
-`Lines:`
-`  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})`
-`  1) (Ax[(Man(x)->Mortal(x))]->(Man(aristotle)->Mortal(aristotle)))    (Assumption Schema: (Ax[R(x)]->R(c)) [templates: R, c, x] instantiated with {'R': (Man(_)->Mortal(_)), 'c': aristotle})`
-`  2) (Man(aristotle)->Mortal(aristotle))    (MP from lines 0 and 1)`
-`  3) Man(aristotle)    (Assumption Schema: Man(aristotle) [templates: none] instantiated with {})`
-`  4) Mortal(aristotle)    (MP from lines 3 and 2)`
-`QED`
+`In [5]: proof = prove_syllogism()`  
+`In [6]: proof`  
+`Out [6]: Proof of Mortal(aristotle) from assumptions/axioms:`  
+`  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]`  
+`  Schema: Man(aristotle) [templates: none]`  
+`  ...`  
+`  Schema: ((Ax[(R(x)->Q())]&Ex[R(x)])->Q()) [templates: Q, R, x]`  
+`Lines:`  
+`  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})`  
+`  1) (Ax[(Man(x)->Mortal(x))]->(Man(aristotle)->Mortal(aristotle)))    (Assumption Schema: (Ax[R(x)]->R(c)) [templates: R, c, x] instantiated with {'R': (Man(_)->Mortal(_)), 'c': aristotle})`  
+`  2) (Man(aristotle)->Mortal(aristotle))    (MP from lines 0 and 1)`  
+`  3) Man(aristotle)    (Assumption Schema: Man(aristotle) [templates: none] instantiated with {})`  
+`  4) Mortal(aristotle)    (MP from lines 3 and 2)`  
+`QED`  
 
   Moreover, the package can check the validity of the proof:
 
-`>>> proof.is_valid()
-True`
+`In [7]: proof.is_valid()`  
+`Out [7]: True`  
 
   And it can perform certain transformations on Proof objects, such as removing an assumption, or converting a proof from assumption P of a contradiction into a proof of ~P, without assumption P. For example:
-`
->>> remove_assumption(proof, formula)
-Proof of (Man(aristotle)->Mortal(aristotle)) from assumptions/axioms:
-  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]
-  ...
-  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]
-Lines:
-  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})
-  ...
-  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)
-QED`
+
+`>>> remove_assumption(proof, formula)
+``Proof of (Man(aristotle)->Mortal(aristotle)) from assumptions/axioms:
+``  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]
+``  ...
+``  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]
+``Lines:
+``  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})
+``  ...
+``  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)
+``QED`
 
 It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. 
 
