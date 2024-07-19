@@ -95,7 +95,7 @@ It also includes an interface through objects of class Prover that assist the co
 FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
 
 # Propositional logic
-The section on propositional logic includes many similar classes, methods, and functions. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules(such as `[] ==> '~F'`, meaning they can be introduced on any lines. The most notable features are described below.
+The section on propositional logic includes many similar classes, methods, and functions. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
 ### Truth tables
 Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
