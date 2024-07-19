@@ -85,6 +85,8 @@ Moreover, any formula can be converted to prenex normal form using the function 
 `  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]])&(Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
 
+Duplicate and uncited lines can be removed from proofs using the `clean()` method that I added.
+
 ### Prover objects
 It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and Line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
 
