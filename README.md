@@ -99,12 +99,15 @@ The section on propositional logic includes many similar classes, methods, and f
 Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
 
 `In [1]: all_models(('p', 'q'))`  
+
 `Out [1]: [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]`   
 
 By evaluating a given function over these, functions implemented in the Semantics file can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function print_truth_table() prints a truth table for any formula.
 
 `In [2]: formula = Formula.parse('~(q&p)')`  
+
 `In [2]: print_truth_table(formula)`  
+
 `Out[2]: `  
 | p | q | ~(q&p) |
 |---|----|---------|
@@ -119,8 +122,11 @@ It can also go the other direction, by synthesizing a formula in CNF or DNF to c
 Given a formula and a model, if the formula evaluates to True in the model, returns a valid proof of the formula. If the formula evalutes to False in the model, returns a valid proof of its negation.
 
 `In [3]: formula = Formula.parse('(p->q)')`  
+
 `In [4]: model = {'p': True, 'q': False}`  
+
 `In [5]: prove_in_model_full(formula, model)`  
+
 `Out [5]: Proof of ['p', '~q'] ==> '~(p->q)' via inference rules:`  
 `  [] ==> '~F'`  
 `  ...`  
