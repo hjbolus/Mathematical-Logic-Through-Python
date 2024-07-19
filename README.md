@@ -52,32 +52,34 @@ The Python package that results from the completed code automates a variety of t
 
   And it can perform certain transformations on Proof objects, such as removing an assumption, or converting a proof from assumption P of a contradiction into a proof of ~P, without assumption P. For example:
 
-`In [8]: remove_assumption(proof, formula)
-`  
-`Out [8]: Proof of (Man(aristotle)->Mortal(aristotle)) from assumptions/axioms:
-`  `  Schema: Ax[(Man(x)->Mortal(x))] [templates: none]
-`  `  ...
-`  `  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]
-`  `Lines:
-`  `  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})
-`  `  ...
-`  `  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)
-`  `QED`
+`In [8]: remove_assumption(proof, formula)`  
+`Out [8]: Proof of (Man(aristotle)->Mortal(aristotle)) from assumptions/axioms:`  
+`Schema: Ax[(Man(x)->Mortal(x))] [templates: none]`  
+`  ...`  
+`Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]`  
+`Lines:`  
+`0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})`  
+`...`  
+`12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)`  
+`QED`  
 
 It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. 
 
 Moreover, any formula can be converted to prenex normal form using the function to_prenex_normal_form(), which returns a a prenex equivalent as well as a proof of the equivalence. For example:
 
-`>>> formula, proof = to_prenex_normal_form(Formula.parse('~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])'))
->>> formula
-Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]
->>> proof
-Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]])&(Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:
-  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]
-  ...
-Lines:
-  0) (((R(x,y)->R(x,y))&(R(x,y)->R(x,y)))->((Ey[R(x,y)]->Ez3292[R(x,z3292)])&(Ez3292[R(x,z3292)]->Ey[R(x,y)])))    (Assumption Schema: (((R(x)->Q(x))&(Q(x)->R(x)))->((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)]))) [templates: Q, R, x, y] instantiated with {'R': R(x,_), 'Q': R(x,_), 'x': 'y', 'y': 'z3292'})
-  ...
-  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]])&(Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)
-`
+`In [9]: formula, proof = to_prenex_normal_form(Formula.parse('~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])'))`  
+
+`In [10]: formula`  
+
+`Out [10]: Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]`  
+
+`In [11]: proof`  
+
+`Out [11]: Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]])&(Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:`  
+`Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]`  
+`  ...`  
+`Lines:`  
+`  0) (((R(x,y)->R(x,y))&(R(x,y)->R(x,y)))->((Ey[R(x,y)]->Ez3292[R(x,z3292)])&(Ez3292[R(x,z3292)]->Ey[R(x,y)])))    (Assumption Schema: (((R(x)->Q(x))&(Q(x)->R(x)))->((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)]))) [templates: Q, R, x, y] instantiated with {'R': R(x,_), 'Q': R(x,_), 'x': 'y', 'y': 'z3292'})`  
+`  ...`  
+`  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]])&(Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 
