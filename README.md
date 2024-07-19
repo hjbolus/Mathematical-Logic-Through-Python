@@ -17,7 +17,7 @@ This textbook provides code skeletons for functions that, when implemented, auto
 ## Models
 Models are stored as `Model` objects, initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class Model return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class Model determines whether or not all of the formulas evaluate to true in the given model. 
 
-Although functions and equality are allowed by default, the file `functions` includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equivalent relations and relation interpretations.
+Although functions and equality are allowed by default, the file functions.py includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equivalent relations and relation interpretations.
 
 ## Axioms, schemas, and assumptions
   Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
@@ -104,7 +104,7 @@ Given any set of constant names, the function `all models()` returns all possibl
 
 `Out [1]: [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]`   
 
-By evaluating a given function over these, functions implemented in the Semantics file can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function print_truth_table() prints a truth table for any formula.
+By evaluating a given function over these, functions implemented in the file semantics.py can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function print_truth_table() prints a truth table for any formula.
 
 `In [2]: formula = Formula.parse('~(q&p)')`  
 
