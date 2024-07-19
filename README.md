@@ -10,9 +10,9 @@ This textbook provides code skeletons for functions that, when implemented, auto
 
 `Out [1]: Ax[(Man(x)->Mortal(x))]`  
 
-`In [2]: print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')`  
+`In [2]: print(f'{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')`  
 
-`Out [2]:Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`  
+`Out [2]: Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`  
 
 ### Models
 Models are stored as `Model` objects, initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class Model return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class Model determines whether or not all of the formulas evaluate to true in the given model. 
