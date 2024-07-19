@@ -76,11 +76,11 @@ Moreover, any formula can be converted to prenex normal form using the function 
 
 `In [11]: proof`  
 
-`Out [11]: Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]])&(Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]-> ~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:`  
+`Out [11]: Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]])&(Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:`  
 `  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]`  
 `  ...`  
 `Lines:`  
-`  0) (((R(x,y)->R(x,y))&(R(x,y)->R(x,y)))->((Ey[R(x,y)]->Ez3292[R(x,z3292)])&(Ez3292[R(x,z3292)]->Ey[R(x,y)])))    (Assumption Schema: (((R(x)->Q(x))&(Q(x)->R(x)))->((Ex[R(x)]-> Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)]))) [templates: Q, R, x, y] instantiated with {'R': R(x,_), 'Q': R(x,_), 'x': 'y', 'y': 'z3292'})`  
+`  0) (((R(x,y)->R(x,y))&(R(x,y)->R(x,y)))->((Ey[R(x,y)]->Ez3292[R(x,z3292)])&(Ez3292[R(x,z3292)]->Ey[R(x,y)])))    (Assumption Schema: (((R(x)->Q(x))&(Q(x)->R(x)))->((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)]))) [templates: Q, R, x, y] instantiated with {'R': R(x,_), 'Q': R(x,_), 'x': 'y', 'y': 'z3292'})`  
 `  ...`  
 `  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]])&(Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
