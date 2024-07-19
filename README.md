@@ -5,7 +5,7 @@ The Python package that results from the completed code automates a variety of t
 
 # First order logic
 ### Formulas
-  In first order logic, Formulas are stored as objects of class Formula, which are composed of subformulas and terms (Term objects) in an expression tree or directed-acyclic graph structure. Term objects are either constants, variables, or functions. Terms and formula can be parsed from strings into objects of their respective type using the .parse() methods of their classes. For example,
+  In first order logic, formulas are stored as objects of class `Formula`, which are composed of subformulas and terms (`Term` objects) in an expression tree or directed-acyclic graph structure. Terms are either constants, variables, or functions. Terms and formulas can be parsed from strings into objects of their respective type using the `parse()` methods of their respective classes. For example,
 
 `In [1]: formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')`  
 
@@ -15,8 +15,10 @@ The Python package that results from the completed code automates a variety of t
 
 `Out [2]:Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`  
 
+### Models
+
 ### Axioms and schemas
-  Axioms are implemented as Schema objects, which include a Formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
+  Axioms are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
   
 `In [3]: schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`  
 
@@ -25,7 +27,7 @@ The Python package that results from the completed code automates a variety of t
 `Out [4]: (x=y->(x=z->y=z))`  
 
 ### Proofs
-  Proofs are stored as Proof objects, and are composed of a set of assumptions (Schema objects), an ordered sequence of lines each of which contains a formula and justification, and a conclusion which is stated both at the outset and as the last line of the proof. The following short proof shows how this data structure is represented:
+  Proofs are stored as Proof objects, and are composed of a set of assumptions (`Schema` objects), an ordered sequence of lines each of which contains a formula and justification, and a conclusion which is stated both at the outset and as the last line of the proof. The following short proof shows how this data structure is represented:
 
 `In [5]: proof = prove_syllogism()`  
 
@@ -50,7 +52,7 @@ The Python package that results from the completed code automates a variety of t
 
 `Out [7]: True`  
 
-  And it can perform certain transformations on Proof objects, such as removing an assumption, or converting a proof from assumption P of a contradiction into a proof of ~P, without assumption P. For example:
+  And it can perform certain transformations on `Proof` objects, such as removing an assumption, or converting a proof from assumption P of a contradiction into a proof of ~P, without assumption P. For example:
 
 `In [8]: remove_assumption(proof, formula)`  
 
@@ -64,9 +66,7 @@ The Python package that results from the completed code automates a variety of t
 `  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)`  
 `QED`  
 
-It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. 
-
-Moreover, any formula can be converted to prenex normal form using the function to_prenex_normal_form(), which returns a a prenex equivalent as well as a proof of the equivalence. For example:
+Moreover, any formula can be converted to prenex normal form using the function `to_prenex_normal_form()`, which returns a a prenex equivalent as well as a proof of the equivalence. In the process, if any quantifiers share variable names, then they will all be replaced with unique ones, leading to unfortunate names like `z3897`. For example:
 
 `In [9]: formula, proof = to_prenex_normal_form(Formula.parse('~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])'))`  
 
@@ -85,3 +85,55 @@ Moreover, any formula can be converted to prenex normal form using the function 
 `  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]])&(Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
 
+### Prover objects
+It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and Line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
+
+FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
+
+# Propositional logic
+The section on propositional logic includes many similar classes, methods, and functions. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules(such as `[] ==> '~F'`, meaning they can be introduced on any lines. The most notable are described below.
+
+### Truth tables
+Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
+
+`In [1]: all_models(('p', 'q'))` 
+`Out [1]: [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]`   
+
+By evaluating a given function over these, functions implemented in the Semantics file can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function print_truth_table() prints a truth table for any formula.
+
+`In [2]: formula = Formula.parse('~(q7&p)')`  
+`In [2]: print_truth_table(formula)`  
+`Out[2]: `  
+>| p | q7 | ~(q7&p) |
+>|---|----|---------|
+>| F | F  | T       |
+>| F | T  | T       |
+>| T | F  | T       |
+>| T | T  | F       |
+
+
+
+### Producing a proof of any formula from a model
+Given a formula and a model, if the formula evaluates to True in the model, returns a valid proof of the formula. If the formula evalutes to False in the model, returns a valid proof of its negation.
+
+`In [1]: formula = Formula.parse('(p->q)')`  
+`In [2]: model = {'p': True, 'q': False}`  
+`In [3]: prove_in_model_full(formula, model)`  
+`Out [3]: Proof of ['p', '~q'] ==> '~(p->q)' via inference rules:`  
+`  [] ==> '~F'`  
+`  ...`  
+`  [] ==> '((~q->~p)->(p->q))'`  
+`Lines:`  
+`  0) p`  
+`  1) ~q`  
+`  2) (p->(~q->~(p->q)))    (Inference Rule [] ==> '(p->(~q->~(p->q)))')`  
+`  3) (~q->~(p->q))    (Inference Rule ['p', '(p->q)'] ==> 'q' on lines 0,2)`  
+`  4) ~(p->q)    (Inference Rule ['p', '(p->q)'] ==> 'q' on lines 1,3)`  
+`QED`  
+
+### prove_tautology_full
+
+
+for any Formula object 'formula', 'proof_or_counterexample_full(formula)' produces a valid propositional logic proof of tautologies and otherwise produces a model in which the formula evaluates to False.
+
+model_or_inconsistency_full
