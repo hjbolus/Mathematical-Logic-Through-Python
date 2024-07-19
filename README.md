@@ -10,7 +10,7 @@ The Python package that results from the completed code automates a variety of t
 `In [1]: formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')`  
 `Out [1]: Ax[(Man(x)->Mortal(x))]`
 
-`In [2]: print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')` 
+`In [2]: print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')`  
 `Out [2]:Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`
 
 ### Axioms and schemas
