@@ -17,8 +17,8 @@ The Python package that results from the completed code automates a variety of t
 
 ### Models
 
-### Axioms and schemas
-  Axioms are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
+### Axioms schemas and assumptions
+  Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
   
 `In [3]: schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`  
 
