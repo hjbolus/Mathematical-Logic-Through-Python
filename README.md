@@ -19,7 +19,7 @@ Models are stored as `Model` objects, initialized with arguments `universe`, `co
 
 Although functions and equality are allowed by default, the file `functions` includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equisastisfiable relations and equivalent relation interpretations.
 
-### Axioms schemas and assumptions
+### Axioms, schemas, and assumptions
   Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
   
 `In [3]: schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`  
