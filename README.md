@@ -97,7 +97,7 @@ FOL proofs are allowed to introduce any tautology on a new line, with 'tautology
 # Propositional logic
 The section on propositional logic includes many similar classes, methods, and functions. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
-## Truth tables
+## Semantics
 Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
 
 `In [1]: all_models(('p', 'q'))`  
