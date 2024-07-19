@@ -7,8 +7,8 @@ The Python package that results from the completed code automates a variety of t
 ### Formulas
   In first order logic, Formulas are stored as objects of class Formula, which are composed of subformulas and terms (Term objects) in an expression tree or directed-acyclic graph structure. Term objects are either constants, variables, or functions. Terms and formula can be parsed from strings into objects of their respective type using the .parse() methods of their classes. For example,
 
-`>>> formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')`
-`Ax[(Man(x)->Mortal(x))]`
+`>>> formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')
+Ax[(Man(x)->Mortal(x))]`
 `>>> print(f'\n{formula} is composed of the quantifier {formula.root}, bound variable {formula.variable}, and statement {formula.statement}. The statement is composed of subformulas {formula.statement.first} and {formula.statement.second}, with the operator {formula.statement.root}')
 Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`
 
