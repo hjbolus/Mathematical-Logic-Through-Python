@@ -3,7 +3,7 @@ Read the official documentation here: https://www.logicthrupython.org/api/.
 This textbook provides code skeletons for functions that, when implemented, automate tasks in formal logic. I worked on them over the last year, and the result is essentially a Python package for classical first order and propositional logic. This repository is the first (and only, as of July 2024) set of solutions available. I have added some utilities without changing the existing ones, so everything in the documentation above is accurate.
 
 # First order logic
-### Formulas
+## Formulas
   Formulas are stored as objects of class `Formula`, which are composed of operators, subformulas, and terms (`Term` objects) in an expression tree or directed-acyclic graph structure. Terms are either constants, variables, or functions. Terms and formulas can be parsed from strings into objects of their respective type using the `parse()` methods of their respective classes. For example,
 
 `In [1]: formula = Formula.parse('Ax[(Man(x)->Mortal(x))]')`  
@@ -14,12 +14,12 @@ This textbook provides code skeletons for functions that, when implemented, auto
 
 `Out [2]: Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`  
 
-### Models
+## Models
 Models are stored as `Model` objects, initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class Model return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class Model determines whether or not all of the formulas evaluate to true in the given model. 
 
 Although functions and equality are allowed by default, the file `functions` includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equisastisfiable relations and equivalent relation interpretations.
 
-### Axioms, schemas, and assumptions
+## Axioms, schemas, and assumptions
   Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
   
 `In [3]: schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`  
@@ -28,7 +28,7 @@ Although functions and equality are allowed by default, the file `functions` inc
 
 `Out [4]: (x=y->(x=z->y=z))`  
 
-### Proofs
+## Proofs
   Proofs are stored as `Proof objects`, and are composed of a set of assumptions (`Schema` objects), an ordered sequence of lines each of which contains a formula and justification, and a conclusion which is stated both at the outset and as the last line of the proof. The following short proof shows how this data structure is represented:
 
 `In [5]: proof = prove_syllogism()`  
@@ -89,7 +89,7 @@ Moreover, any formula can be converted to prenex normal form using the function 
 
 Duplicate and uncited lines can be removed from proofs using the `clean()` method that I added.
 
-### Prover objects
+## Prover objects
 It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These check for validity at each step, and allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
 
 FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
@@ -97,7 +97,7 @@ FOL proofs are allowed to introduce any tautology on a new line, with 'tautology
 # Propositional logic
 The section on propositional logic includes many similar classes, methods, and functions. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
-### Truth tables
+## Truth tables
 Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
 
 `In [1]: all_models(('p', 'q'))`  
@@ -120,7 +120,7 @@ By evaluating a given function over these, functions implemented in the Semantic
 
 It can also go the other direction, by synthesizing a formula in CNF or DNF to capture a particular model or set of models, using the functions `synthesize()` or `synthesize_cnf()`.
 
-### Automated proofs
+## Automated proofs
 Given a formula and a model, if the formula evaluates to True in the model, returns a valid proof of the formula. If the formula evalutes to False in the model, returns a valid proof of its negation.
 
 `In [3]: formula = Formula.parse('(p->q)')`  
