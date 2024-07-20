@@ -68,34 +68,36 @@ Although functions and equality are allowed by default, the file functions.py in
 `  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)`  
 `QED`  
 
-Moreover, any formula can be converted to prenex normal form using the function `to_prenex_normal_form()`, which returns a a prenex equivalent as well as a proof of the equivalence. In the process, if any quantifiers share variable names, then they will all be replaced with unique ones, leading to unfortunate names like `z3897`. For example:
+Moreover, any formula can be converted to prenex normal form using the function `to_prenex_normal_form()`, which returns a a prenex equivalent as well as a proof of the equivalence. In the process, if any quantifiers share variable names, then they will all be replaced with unique ones, leading to unfortunate names like `z15`. For example:
 
 `In [9]: formula, proof = to_prenex_normal_form(Formula.parse('~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])'))`  
 
 `In [10]: formula`  
 
-`Out [10]: Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]`  
+`Out [10]: Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]`  
 
 `In [11]: proof`  
 
-`Out [11]: Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]])&(Ez3884[Az3885[Ez3897[Az3898[~~(~R(z3884,z3885)&~z3897=z3898)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:`  
+`Out [11]: Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]])&(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:`  
 `  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]`  
 `  ...`  
 `Lines:`  
-`  0) (((R(x,y)->R(x,y))&(R(x,y)->R(x,y)))->((Ey[R(x,y)]->Ez3292[R(x,z3292)])&(Ez3292[R(x,z3292)]->Ey[R(x,y)])))    (Assumption Schema: (((R(x)->Q(x))&(Q(x)->R(x)))->((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)]))) [templates: Q, R, x, y] instantiated with {'R': R(x,_), 'Q': R(x,_), 'x': 'y', 'y': 'z3292'})`  
+`  0) (((R(x,y)->R(x,y))&(R(x,y)->R(x,y)))->((Ey[R(x,y)]->Ez2[R(x,z2)])&(Ez2[R(x,z2)]->Ey[R(x,y)])))    (Assumption Schema: (((R(x)->Q(x))&(Q(x)->R(x)))->((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)]))) [templates: Q, R, x, y] instantiated with {'R': R(x,_), 'Q': R(x,_), 'x': 'y', 'y': 'z2'})`  
 `  ...`  
-`  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]])&(Ez3291[Az3292[Ez3304[Az3305[~~(~R(z3291,z3292)&~z3304=z3305)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
+`  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]])&(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
 
-Duplicate and uncited lines can be removed from proofs using the `clean()` method that I added.
+Duplicated and uncited lines can be removed from proofs using the `clean()` method that I added, without changing the validity of the proof.
 
 ## Prover objects
-It also includes an interface through objects of class Prover that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These check for validity at each step, and allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
+It also includes an interface through objects of class `Prover` that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These check for validity at each step, and allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
 
 FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
 
+You can inline proofs using `Prover` objects by using the method `add_proof(proof.conclusion, proof)` of class `Prover`. This automatically adjusts line numbers so that the proof remains valid.
+
 # Propositional logic
-The section on propositional logic includes many similar classes, methods, and functions. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
+The section on propositional logic includes many similar classes, methods, and functions. The major difference is that any proof from a certain set of axioms can be generated automatically using functions described below. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
 ## Semantics
 Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
@@ -104,7 +106,7 @@ Given any set of constant names, the function `all models()` returns all possibl
 
 `Out [1]: [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]`   
 
-By evaluating a given function over these, functions implemented in the file semantics.py can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function print_truth_table() prints a truth table for any formula.
+By evaluating a given formula over all models, functions implemented in the file semantics.py can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function `print_truth_table()` prints a truth table for any formula.
 
 `In [2]: formula = Formula.parse('~(q&p)')`  
 
@@ -121,7 +123,7 @@ By evaluating a given function over these, functions implemented in the file sem
 It can also go the other direction, by synthesizing a formula in CNF or DNF to capture a particular model or set of models, using the functions `synthesize()` or `synthesize_cnf()`.
 
 ## Automated proofs
-Given a formula and a model, if the formula evaluates to True in the model, returns a valid proof of the formula. If the formula evalutes to False in the model, returns a valid proof of its negation.
+Given a formula and a model, if the formula evaluates to True in the model, `prove_in_model_full(formula, model) `returns a valid proof of the formula. If the formula evalutes to False in the model, it returns a valid proof of its negation.
 
 `In [3]: formula = Formula.parse('(p->q)')`  
 
@@ -141,8 +143,10 @@ Given a formula and a model, if the formula evaluates to True in the model, retu
 `  4) ~(p->q)    (Inference Rule ['p', '(p->q)'] ==> 'q' on lines 1,3)`  
 `QED`  
 
-Given any tautology `tautology`, the function `prove_tautology_full(tautology)` returns a valid proof of the tautology, generated by first proving the formula in all models, then combining those proofs and removing the assumptions unique to their models.
+Similarly, given any tautology `tautology`, the function `prove_tautology_full(tautology)` returns a valid proof of the tautology, generated by first proving the formula in all models, then combining those proofs and removing the assumptions unique to their models.
 
-For any Formula `formula`, the function `proof_or_counterexample_full(formula)`, if `formula` is a tautology, returns a valid proof; otherwise it returns a model in which the formula evaluates to False.
+The function `proof_or_counterexample_full(formula)`, if `formula` is a tautology, returns a valid proof; otherwise it returns a model in which the formula evaluates to False.
 
 On the other hand, if a formula is satisfiable, `model_or_inconsistency_full(formula)` returns a model in which it evaluates to True; otherwise it returns a proof of a contradiction derived by assuming `formula`.
+
+In order to evaluate if an FOL formula is a tautology, functions for prediate logic convert the formula to a propositional skeleton and take advantage of methods from propositional logic to determine it easily.
