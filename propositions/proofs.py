@@ -89,7 +89,7 @@ class InferenceRule:
         for assumption in self.assumptions:
             variable_list = variable_list | Formula.variables(assumption)
         return variable_list | Formula.variables(self.conclusion)
-        # Task 4.1
+        # Harris J. Bolus - Task 4.1
 
     def specialize(self, specialization_map: SpecializationMap) -> \
             InferenceRule:
@@ -110,7 +110,7 @@ class InferenceRule:
         specialized_assumptions = (Formula.substitute_variables(assumption, specialization_map) for assumption in self.assumptions)
         specialized_conclusion = Formula.substitute_variables(self.conclusion, specialization_map)
         return InferenceRule(specialized_assumptions, specialized_conclusion)
-        # Task 4.4
+        # Harris J. Bolus - Task 4.4
 
     @staticmethod
     def _merge_specialization_maps(
@@ -153,7 +153,7 @@ class InferenceRule:
             map1[key] = specialization_map2[key]
 
         return map1
-        # Task 4.5a
+        # Harris J. Bolus - Task 4.5a
 
     @staticmethod
     def _formula_specialization_map(general: Formula, specialization: Formula) \
@@ -203,7 +203,7 @@ class InferenceRule:
                     return None
         else:
             return None
-        # Task 4.5b
+        # Harris J. Bolus - Task 4.5b
 
     def specialization_map(self, specialization: InferenceRule) -> \
             Union[SpecializationMap, None]:
@@ -225,7 +225,7 @@ class InferenceRule:
             return None
         map1 = InferenceRule._merge_specialization_maps(map1, InferenceRule._formula_specialization_map(self.conclusion,specialization.conclusion))
         return map1 if map1 else None
-        # Task 4.5c
+        # Harris J. Bolus - Task 4.5c
 
     def is_specialization_of(self, general: InferenceRule) -> bool:
         """Checks if the current inference rule is a specialization of the given
@@ -386,7 +386,7 @@ class Proof:
                 assumptions.append(self.lines[assumption].formula)
             conclusion = self.lines[line_number].formula
             return InferenceRule(assumptions, conclusion)
-        # Task 4.6a
+        # Harris J. Bolus - Task 4.6a
 
     def is_line_valid(self, line_number: int) -> bool:
         """Checks if the specified line validly follows from its justifications.
@@ -429,7 +429,7 @@ class Proof:
             if not assumptions_match_line:
                 print(f'assumptions do not match formula: {line}')
             return rule_was_given and rule_matches_line and assumptions_are_prior and assumptions_match_line
-        # Task 4.6b
+        # Harris J. Bolus - Task 4.6b
 
     def is_valid(self) -> bool:
         """Checks if the current proof is a valid proof of its claimed statement
@@ -448,7 +448,7 @@ class Proof:
                 print('statement ' + str(self.statement.conclusion) + ' != conclusion ' + str(self.lines[-1].formula))
             return each_line_is_valid and conclusion_matches
         return False
-        # Task 4.6c
+        # Harris J. Bolus - Task 4.6c
 
     def cited_by(self, line_number) -> list:
         """Returns a list of lines cited by the given line"""
@@ -555,7 +555,7 @@ def prove_specialization(proof: Proof, specialization: InferenceRule) -> Proof:
     proof1 = Proof(specialized_statement, proof.rules, specialized_lines)
 
     return proof1
-    # Task 5.1
+    # Harris J. Bolus - Task 5.1
 
 def _inline_proof_once(main_proof: Proof, line_number: int,
                        lemma_proof: Proof) -> Proof:
@@ -624,7 +624,7 @@ def _inline_proof_once(main_proof: Proof, line_number: int,
     new_rules = set(lemma_proof.rules).union(set(main_proof.rules))
     return Proof(main_proof.statement, new_rules, new_lines)
 
-    # Task 5.2a
+    # Harris J. Bolus - Task 5.2a
 
 def uses_rule(proof: Proof, rule: InferenceRule) -> bool:
     """Returns True if the given proof uses the given rule.
@@ -670,7 +670,7 @@ def inline_proof(main_proof: Proof, lemma_proof: Proof) -> Proof:
         new_proof = _inline_proof_once(new_proof, find_first_use_of_rule(new_proof, lemma_proof.statement), lemma_proof)
     proof1 = Proof(main_proof.statement, new_rules, new_proof.lines)
     return proof1
-    # Task 5.2b
+    # Harris J. Bolus - Task 5.2b
 
 def parse_inference_rule(text:str) -> InferenceRule:
     """Converts a copied-and-pasted string from an inference rule object into an InferenceRule object"""
