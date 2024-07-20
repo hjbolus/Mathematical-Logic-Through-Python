@@ -30,7 +30,7 @@ def to_not_and_or(formula: Formula) -> Formula:
                 '-|': Formula.parse('~(p|q)'),
                 '<->': Formula.parse('((~p|q)&(~q|p))')}
     return Formula.substitute_operators(formula, sub_map)
-    # Task 3.5
+    # Harris J. Bolus - Task 3.5
 
 def to_not_and(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
@@ -52,7 +52,7 @@ def to_not_and(formula: Formula) -> Formula:
                 '-|': Formula.parse('(~p&~q)'),
                 '<->': Formula.parse('(~(p&~q)&~(q&~p))')}
     return Formula.substitute_operators(formula, sub_map)
-    # Task 3.6a
+    # Harris J. Bolus - Task 3.6a
 
 def to_nand(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
@@ -75,7 +75,7 @@ def to_nand(formula: Formula) -> Formula:
                 '-|': Formula.parse('(((p-&p)-&(q-&q))-&((p-&p)-&(q-&q)))'),
                 '<->': Formula.parse('(((p-&p)-&(q-&q))-&(p-&q))')}
     return Formula.substitute_operators(formula, sub_map)
-    # Task 3.6b
+    # Harris J. Bolus - Task 3.6b
 
 def to_implies_not(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
@@ -97,7 +97,7 @@ def to_implies_not(formula: Formula) -> Formula:
                 '-&': Formula.parse('(p->~q)'),
                 '<->': Formula.parse('~((p->q)->~(q->p))')}
     return Formula.substitute_operators(formula, sub_map)
-    # Task 3.6c
+    # Harris J. Bolus - Task 3.6c
 
 def to_implies_false(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
@@ -119,7 +119,7 @@ def to_implies_false(formula: Formula) -> Formula:
                 '-&': Formula.parse('((p->q)->(p->F))'),
                 '<->': Formula.parse('(((p->q)->((q->p)->F))->F)')}
     return Formula.substitute_operators(formula, sub_map)
-    # Task 3.6d
+    # Harris J. Bolus - Task 3.6d
 
 def to_not_or(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
