@@ -48,7 +48,7 @@ def prove_corollary(antecedent_proof: Proof, consequent: Formula,
     new_lines.append(Proof.Line(consequent, MP, [n-1,n]))
 
     return Proof(new_statement, new_rules, new_lines)
-    # Task 5.3a
+    # Harris J. Bolus - Task 5.3a
 
 def combine_proofs(antecedent1_proof: Proof, antecedent2_proof: Proof,
                    consequent: Formula, double_conditional: InferenceRule) -> \
@@ -103,7 +103,7 @@ def combine_proofs(antecedent1_proof: Proof, antecedent2_proof: Proof,
     new_lines.append(Proof.Line(consequent, MP, [n+m-1, n+m+1]))
 
     return Proof(new_statement, new_rules, new_lines)
-    # Task 5.3b
+    # Harris J. Bolus - Task 5.3b
 
 def remove_assumption(proof: Proof) -> Proof:
     """Converts the given proof of some `conclusion` formula, the last
@@ -176,7 +176,7 @@ def remove_assumption(proof: Proof) -> Proof:
     new_rules = proof.rules | set((I0, D, I1, MP))
 
     return Proof(new_statement, new_rules, new_lines)
-    # Task 5.4
+    # Harris J. Bolus - Task 5.4
 
 def prove_from_opposites(proof_of_affirmation: Proof,
                          proof_of_negation: Proof, conclusion: Formula) -> \
@@ -203,7 +203,7 @@ def prove_from_opposites(proof_of_affirmation: Proof,
     assert proof_of_affirmation.rules == proof_of_negation.rules
 
     return combine_proofs(proof_of_negation, proof_of_affirmation, conclusion, I2)
-    # Task 5.6
+    # Harris J. Bolus - Task 5.6
 
 def prove_by_way_of_contradiction(proof: Proof) -> Proof:
     """Converts the given proof of ``'~(p->p)'``, the last assumption of which
@@ -244,4 +244,4 @@ def prove_by_way_of_contradiction(proof: Proof) -> Proof:
     new_lines.append(Proof.Line(r, MP, [n, n-1]))
 
     return Proof(new_statement, proof.rules, new_lines)
-    # Task 5.7
+    # Harris J. Bolus - Task 5.7
