@@ -89,7 +89,7 @@ def evaluate(formula: Formula, model: Model) -> bool:
             return evaluate(formula.first, model) != evaluate(formula.second, model)
         elif formula.root == '<->':
             return evaluate(formula.first, model) == evaluate(formula.second, model)
-    # Task 2.1
+    # Harris J. Bolus - Task 2.1
 
 def all_models(variables: Sequence[str]) -> Iterable[Model]:
     """Calculates all possible models over the given variable names.
@@ -110,7 +110,7 @@ def all_models(variables: Sequence[str]) -> Iterable[Model]:
         [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]
     """
     return (({tuple(variables)[j]:i[j] for j in range(len(i))}) for i in product({False, True}, repeat=len(variables)))
-    # Task 2.2
+    # Harris J. Bolus - Task 2.2
 
 def truth_values(formula: Formula, models: Iterable[Model]) -> Iterable[bool]:
     """Calculates the truth value of the given formula in each of the given
@@ -129,7 +129,7 @@ def truth_values(formula: Formula, models: Iterable[Model]) -> Iterable[bool]:
         [True, True, True, False]
     """
     return (evaluate(formula, model) for model in models)
-    # Task 2.3
+    # Harris J. Bolus - Task 2.3
 
 def print_truth_table(formula: Formula) -> None:
     """Prints the truth table of the given formula, with variable-name columns
@@ -155,7 +155,7 @@ def print_truth_table(formula: Formula) -> None:
     print('|-' + '-|-'.join(['-'*len(i) for i in variables]) + '-|-' + '-'*len(str(formula)) + '-|')
     for i in all_models(variables):
         print('| ' + ' | '.join([bool_to_str(i[j])+' '*(len(j)-1) for j in variables]) + ' | ' + bool_to_str(evaluate(formula,i)) + ' ' * len(str(formula)) + '|')
-    # Task 2.4
+    # Harris J. Bolus - Task 2.4
 
 def is_tautology(formula: Formula) -> bool:
     """Checks if the given formula is a tautology.
@@ -167,7 +167,7 @@ def is_tautology(formula: Formula) -> bool:
         ``True`` if the given formula is a tautology, ``False`` otherwise.
     """
     return all(truth_values(formula,all_models(Formula.variables(formula))))
-    # Task 2.5a
+    # Harris J. Bolus - Task 2.5a
 
 def is_contradiction(formula: Formula) -> bool:
     """Checks if the given formula is a contradiction.
@@ -179,7 +179,7 @@ def is_contradiction(formula: Formula) -> bool:
         ``True`` if the given formula is a contradiction, ``False`` otherwise.
     """
     return not any(truth_values(formula,all_models(Formula.variables(formula))))
-    # Task 2.5b
+    # Harris J. Bolus - Task 2.5b
 
 def is_satisfiable(formula: Formula) -> bool:
     """Checks if the given formula is satisfiable.
@@ -191,7 +191,7 @@ def is_satisfiable(formula: Formula) -> bool:
         ``True`` if the given formula is satisfiable, ``False`` otherwise.
     """
     return any(truth_values(formula,all_models(Formula.variables(formula))))
-    # Task 2.5c
+    # Harris J. Bolus - Task 2.5c
 
 def _synthesize_for_model(model: Model) -> Formula:
     """Synthesizes a propositional formula in the form of a single conjunctive
@@ -220,7 +220,7 @@ def _synthesize_for_model(model: Model) -> Formula:
         formula = Formula('&', formula, second)
     return formula
 
-    # Task 2.6
+    # Harris J. Bolus - Task 2.6
 
 def synthesize(variables: Sequence[str], values: Iterable[bool]) -> Formula:
     """Synthesizes a propositional formula in DNF over the given variable names,
@@ -259,7 +259,7 @@ def synthesize(variables: Sequence[str], values: Iterable[bool]) -> Formula:
             second = Formula('&',second, Formula('~',second))
             formula = Formula('|',formula, second)
     return formula
-    # Task 2.7
+    # Harris J. Bolus - Task 2.7
 
 def _synthesize_for_all_except_model(model: Model) -> Formula:
     """Synthesizes a propositional formula in the form of a single disjunctive
@@ -292,7 +292,7 @@ def _synthesize_for_all_except_model(model: Model) -> Formula:
                 first = Formula(i)
             formula = Formula('|', first, formula)
     return formula
-    # Optional Task 2.8
+    # Harris J. Bolus - Optional Task 2.8
 
 def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
     """Synthesizes a propositional formula in CNF over the given variable names,
@@ -332,7 +332,7 @@ def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
             second = Formula('|',second, Formula('~',second))
             formula = Formula('&',formula, second)
     return formula
-    # Optional Task 2.9
+    # Harris J. Bolus - Optional Task 2.9
 
 def combine_formulae(formulae: Iterable[Formula], operator: str) -> Formula:
     if len(formulae) == 0:
@@ -369,7 +369,7 @@ def evaluate_inference(rule: InferenceRule, model: Model) -> bool:
     else:
         formula = rule.conclusion
     return evaluate(formula, model)
-    # Task 4.2
+    # Harris J. Bolus - Task 4.2
 
 def is_sound_inference(rule: InferenceRule) -> bool:
     """Checks if the given inference rule is sound, i.e., whether its
@@ -382,4 +382,4 @@ def is_sound_inference(rule: InferenceRule) -> bool:
         ``True`` if the given inference rule is sound, ``False`` otherwise.
     """
     return all((evaluate_inference(rule, model) for model in all_models(InferenceRule.variables(rule))))
-    # Task 4.3
+    # Harris J. Bolus - Task 4.3
