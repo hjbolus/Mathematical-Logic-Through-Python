@@ -99,7 +99,7 @@ def graph3coloring_to_formula(graph: Graph) -> Formula:
 
     return formula
 
-    # Optional Task 2.10a
+    # Harris J. Bolus - Optional Task 2.10a
 
 def assignment_to_3coloring(graph: Graph, assignment: Model) -> \
         Mapping[int, int]:
@@ -127,7 +127,7 @@ def assignment_to_3coloring(graph: Graph, assignment: Model) -> \
         if assignment[i]:
             mapping[int(i[1:-1])] = int(i[-1])
     return mapping
-    # Optional Task 2.10b
+    # Harris J. Bolus - Optional Task 2.10b
 
 def tricolor_graph(graph: Graph) -> Union[Mapping[int, int], None]:
     """Computes a 3-coloring of the given graph.
