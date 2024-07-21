@@ -199,7 +199,7 @@ class Term:
         else:
             assert type(self) == Term or type(self) == Formula
             return f'{root}({",".join([argument.__repr__() for argument in self.arguments])})'
-        # Task 7.1
+        # Harris J. Bolus - Task 7.1
 
     def __eq__(self, other: object) -> bool:
         """Compares the current term with the given one.
@@ -259,7 +259,7 @@ class Term:
                     if arg_suffix and arg_suffix[0] == ',':
                         arg_suffix = arg_suffix[1:]
                 return Term(function_name, [Term._parse_prefix(arg)[0] for arg in arg_list]), suffix
-        # Task 7.3a
+        # Harris J. Bolus - Task 7.3a
 
     @staticmethod
     def parse(string: str) -> Term:
@@ -272,7 +272,7 @@ class Term:
             A term whose standard string representation is the given string.
         """
         return Term._parse_prefix(string)[0]
-        # Task 7.3b
+        # Harris J. Bolus - Task 7.3b
 
     def constants(self) -> Set[str]:
         """Finds all constant names in the current term.
@@ -292,7 +292,7 @@ class Term:
             for argument in self.arguments:
                 constants = constants | Term.constants(argument)
             return constants
-        # Task 7.5a
+        # Harris J. Bolus - Task 7.5a
 
     def variables(self) -> Set[str]:
         """Finds all variable names in the current term.
@@ -312,7 +312,7 @@ class Term:
             for argument in self.arguments:
                 variables = variables | Term.variables(argument)
             return variables
-        # Task 7.5b
+        # Harris J. Bolus - Task 7.5b
 
     def functions(self) -> Set[Tuple[str, int]]:
         """Finds all function names in the current term, along with their
@@ -329,7 +329,7 @@ class Term:
             for argument in self.arguments:
                 functions = functions | Term.functions(argument)
         return functions
-        # Task 7.5c
+        # Harris J. Bolus - Task 7.5c
 
     def __len__(self) -> int:
         return len(self.variables()) + len(self.constants()) + len(self.functions())
@@ -389,7 +389,7 @@ class Term:
         else:
             term = Term(self.root, [argument.substitute(substitution_map, forbidden_variables) for argument in self.arguments])
         return term
-        # Task 9.1
+        # Harris J. Bolus - Task 9.1
 
 @lru_cache(maxsize=100) # Cache the return value of is_equality
 def is_equality(string: str) -> bool:
@@ -551,7 +551,7 @@ class Formula:
             assert is_quantifier(root)
             return f'{root}{self.variable}[{self.statement.__repr__()}]'
 
-        # Task 7.2
+        # Harris J. Bolus - Task 7.2
 
     def __eq__(self, other: object) -> bool:
         """Compares the current formula with the given one.
@@ -631,7 +631,7 @@ class Formula:
             operator, second = separate_operator(remaining)
             formula = Formula(operator, first, Formula._parse_prefix(second)[0])
         return formula, suffix
-        # Task 7.4a
+        # Harris J. Bolus - Task 7.4a
 
     @staticmethod
     def parse(string: str) -> Formula:
@@ -644,7 +644,7 @@ class Formula:
             A formula whose standard string representation is the given string.
         """
         return Formula._parse_prefix(string)[0]
-        # Task 7.4b
+        # Harris J. Bolus - Task 7.4b
 
     def constants(self) -> Set[str]:
         """Finds all constant names in the current formula.
@@ -666,7 +666,7 @@ class Formula:
             for argument in self.arguments:
                 constants = constants | Term.constants(argument)
             return constants
-        # Task 7.6a
+        # Harris J. Bolus - Task 7.6a
 
     def variables(self) -> Set[str]:
         """Finds all variable names in the current formula.
@@ -689,7 +689,7 @@ class Formula:
             for argument in self.arguments:
                 variables = variables | Term.variables(argument)
             return variables
-        # Task 7.6b
+        # Harris J. Bolus - Task 7.6b
 
     def free_variables(self) -> Set[str]:
         """Finds all variable names that are free in the current formula.
@@ -714,7 +714,7 @@ class Formula:
             for argument in self.arguments:
                 free_variables = free_variables | Term.variables(argument)
             return free_variables
-        # Task 7.6c
+        # Harris J. Bolus - Task 7.6c
 
     def bound_variables(self) -> Set[str]:
         """Finds all variable names that are quantified in the current formula.
@@ -761,7 +761,7 @@ class Formula:
             for argument in self.arguments:
                 functions = functions | Term.functions(argument)
             return functions
-        # Task 7.6d
+        # Harris J. Bolus - Task 7.6d
 
     def relations(self) -> Set[Tuple[str, int]]:
         """Finds all relation names in the current formula, along with their
@@ -785,7 +785,7 @@ class Formula:
             return Formula.relations(self.first) | Formula.relations(self.second)
 
         return set()
-        # Task 7.6e
+        # Harris J. Bolus - Task 7.6e
 
     def quantifiers(self) -> Set[Tuple[str, str]]:
         """Finds all quantifiers in the current formula.
@@ -895,7 +895,7 @@ class Formula:
                 else:
                     formula = self
         return formula
-        # Task 9.2
+        # Harris J. Bolus - Task 9.2
 
     def propositional_skeleton(self, substitution_map=None) -> Tuple[PropositionalFormula,
                                               Mapping[str, Formula]]:
@@ -951,7 +951,7 @@ class Formula:
                 substitution_map[variable] = self
                 formula = PropositionalFormula.parse(variable)
         return formula, substitution_map
-        # Task 9.8
+        # Harris J. Bolus - Task 9.8
 
     @staticmethod
     def from_propositional_skeleton(skeleton: PropositionalFormula,
@@ -1001,7 +1001,7 @@ class Formula:
                     Formula.from_propositional_skeleton(skeleton.first, substitution_map),
                     Formula.from_propositional_skeleton(skeleton.second, substitution_map))
 
-        # Task 9.10
+        # Harris J. Bolus - Task 9.10
 
 def make_formula_of_size(size: int) -> Formula:
     """Accepts an integer `size`, returns a formula of the form Exi[...Ex0[(...(L(x0,x1)&...)&L(xi,xi+1))]]] up to i = `size`. 248 is the max size I can request before an error.
