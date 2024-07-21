@@ -343,7 +343,7 @@ class Prover:
 
         step1 = self.add_instantiated_assumption(Formula('->', quantified, instantiation), Prover.UI, instantiation_map)
         return self.add_mp(instantiation, line_number, step1)
-        # Task 10.1
+        # Harris J. Bolus - Task 10.1
 
     def add_tautological_implication(self, implication: Union[Formula, str],
                                      line_numbers: AbstractSet[int]) -> int:
@@ -377,7 +377,7 @@ class Prover:
                 tautology = tautology.second
                 step = self.add_mp(tautology, line, step)
         return self.add_mp(implication, line_numbers[-1], step)
-        # Task 10.2
+        # Harris J. Bolus - Task 10.2
 
     def add_existential_derivation(self, consequent: Union[Formula, str],
                                    line_number1: int, line_number2: int) -> int:
@@ -420,7 +420,7 @@ class Prover:
                         'x': variable}
         step2 = self.add_instantiated_assumption(Prover.ES.instantiate(instantiation_map), Prover.ES, instantiation_map)
         return self.add_tautological_implication(consequent, {line_number1, step1, step2})
-        # Task 10.3
+        # Harris J. Bolus - Task 10.3
 
     def add_flipped_equality(self, flipped: Union[Formula, str],
                              line_number: int) -> int:
@@ -454,7 +454,7 @@ class Prover:
         step3 = self.add_instantiated_assumption(Prover.RX.instantiate({'c':x}), Prover.RX, {'c':x})
         return self.add_mp(self._lines[step2].formula.second, step3, step2)
 
-        # Task 10.6
+        # Harris J. Bolus - Task 10.6
 
     def add_free_instantiation(self, instantiation: Union[Formula, str],
                                line_number: int,
@@ -556,7 +556,7 @@ class Prover:
                 new_formula = self._lines[line_number].formula.statement.substitute({quantified_variable: substitution_map[quantified_variable]})
                 line_number = self.add_universal_instantiation(new_formula, line_number, substitution_map[quantified_variable])
         return line_number
-        # Task 10.7
+        # Harris J. Bolus - Task 10.7
 
     def add_substituted_equality(self, substituted: Union[Formula, str],
                                  line_number: int,
@@ -609,7 +609,7 @@ class Prover:
         step2 = self.add_mp(me.second, line_number, step1)
         step3 = self.add_instantiated_assumption(Prover.RX.instantiate({'c':nonparametrized_term}), Prover.RX, {'c':nonparametrized_term})
         return self.add_mp(me.second.second, step3, step2)
-        # Task 10.8
+        # Harris J. Bolus - Task 10.8
 
     def _add_chaining_of_two_equalities(self, line_number1: int,
                                         line_number2: int) -> int:
@@ -649,7 +649,7 @@ class Prover:
         step1 = self.add_instantiated_assumption(me, Prover.ME, inst_map)
         step2 = self.add_mp(me.second, line_number2, step1)
         return self.add_mp(me.second.second, line_number1, step2)
-        # Task 10.9a
+        # Harris J. Bolus - Task 10.9a
 
     def add_chained_equality(self, chained: Union[Formula, str],
                              line_numbers: Sequence[int]) -> int:
@@ -709,4 +709,4 @@ class Prover:
             step0 = self.add_mp(me.second.second, step0, step2)
             equality1 = me.second.second
         return step0
-        # Task 10.9b
+        # Harris J. Bolus - Task 10.9b
