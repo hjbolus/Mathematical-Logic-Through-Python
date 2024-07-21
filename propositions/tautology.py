@@ -43,7 +43,7 @@ def formulas_capturing_model(model: Model) -> List[Formula]:
         else:
             list1.append(Formula('~',Formula.parse(i)))
     return list1
-    # Task 6.1a
+    # Harris J. Bolus - Task 6.1a
 
 def prove_in_model(formula: Formula, model:Model) -> Proof:
     """Either proves the given formula or proves its negation, from the formulas
@@ -130,7 +130,7 @@ def prove_in_model(formula: Formula, model:Model) -> Proof:
             proof2 = prove_in_model(Formula('~', formula.second), model)
             consequent = Formula('~', formula)
             return combine_proofs(proof1, proof2, consequent, NI)
-    # Task 6.1b
+    # Harris J. Bolus - Task 6.1b
 
 def reduce_assumption(proof_from_affirmation: Proof, proof_from_negation: Proof) -> Proof:
     """Combines the two given proofs, both of the same formula `conclusion` and
@@ -176,7 +176,7 @@ def reduce_assumption(proof_from_affirmation: Proof, proof_from_negation: Proof)
                           proof_from_affirmation.statement.conclusion,
                           R)
 
-    # Task 6.2
+    # Harris J. Bolus - Task 6.2
 
 def prove_tautology(tautology: Formula, model: Model = frozendict()) -> Proof:
     """Proves the given tautology from the formulas that capture the given
@@ -234,7 +234,7 @@ def prove_tautology(tautology: Formula, model: Model = frozendict()) -> Proof:
 
         return reduce_assumption(prove_tautology(tautology, model),
                                  prove_tautology(tautology, model_copy))
-    # Task 6.3a
+    # Harris J. Bolus - Task 6.3a
 
 def proof_or_counterexample(formula: Formula) -> Union[Proof, Model]:
     """Either proves the given formula or finds a model in which it does not
@@ -256,7 +256,7 @@ def proof_or_counterexample(formula: Formula) -> Union[Proof, Model]:
         for i in all_models(formula.variables()):
             if not evaluate(formula, i):
                 return i
-    # Task 6.3b
+    # Harris J. Bolus - Task 6.3b
 
 def encode_as_formula(rule: InferenceRule) -> Formula:
     """Encodes the given inference rule as a formula consisting of a chain of
@@ -284,7 +284,7 @@ def encode_as_formula(rule: InferenceRule) -> Formula:
         return encode_as_formula(InferenceRule(new_assumptions, new_conclusion))
     else:
         return rule.conclusion
-    # Task 6.4a
+    # Harris J. Bolus - Task 6.4a
 
 def prove_sound_inference(rule: InferenceRule) -> Proof:
     """Proves the given sound inference rule.
@@ -314,7 +314,7 @@ def prove_sound_inference(rule: InferenceRule) -> Proof:
         n += 2
 
     return Proof(rule, rules, lines)
-    # Task 6.4b
+    # Harris J. Bolus - Task 6.4b
 
 def model_or_inconsistency(formulae: Sequence[Formula]) -> Union[Model, Proof]:
     """Either finds a model in which all the given formulas hold, or proves
@@ -342,7 +342,7 @@ def model_or_inconsistency(formulae: Sequence[Formula]) -> Union[Model, Proof]:
         return models[0]
     else:
         return prove_sound_inference(InferenceRule(formulae, Formula.parse('~(p->p)')))
-    # Task 6.5
+    # Harris J. Bolus - Task 6.5
 
 def prove_in_model_full(formula: Formula, model: Model) -> Proof:
     """Either proves the given formula or proves its negation, from the formulas
@@ -482,4 +482,4 @@ def prove_in_model_full(formula: Formula, model: Model) -> Proof:
         line = [Proof.Line(Formula('~', formula), NF, ())]
         statement = NF
         return Proof(statement, rules, line)
-    # Optional Task 6.6
+    # Harris J. Bolus - Optional Task 6.6
