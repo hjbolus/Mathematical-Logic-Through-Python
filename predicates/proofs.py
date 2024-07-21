@@ -307,7 +307,7 @@ class Schema:
                             bound_variables)
             formula = Formula(root, variable, formula)
         return formula
-        # Task 9.3
+        # Harris J. Bolus - Task 9.3
 
     def instantiate(self, instantiation_map: InstantiationMap) -> \
             Union[Formula, None]:
@@ -446,7 +446,7 @@ class Schema:
         except Schema.BoundVariableError as e:
             print(f'BoundVariableError: {e.variable_name} is bound within the relation {e.relation_name}')
             return None
-        # Task 9.4
+        # Harris J. Bolus - Task 9.4
 
     @staticmethod
     def parse(string: str) -> Schema:
@@ -573,7 +573,7 @@ class Proof:
             else:
                 print(f'Invalid line [{line_number, self}]\nassumption is valid: {assumption_is_valid}\nformula is valid: {formula_is_valid}')
                 return False
-            # Task 9.5
+            # Harris J. Bolus - Task 9.5
 
         @staticmethod
         def parse(string: str) -> Proof.AssumptionLine:
@@ -670,7 +670,7 @@ class Proof:
             else:
                 print(f'Invalid line: [{self}]:\nformula is valid: {formula_is_valid}\nline is after antecedent: {line_number > self.antecedent_line_number}\nline is after consequent: {line_number > self.conditional_line_number}')
                 return False
-            # Task 9.6
+            # Harris J. Bolus - Task 9.6
 
         @staticmethod
         def parse(string: str) -> Proof.MPLine:
@@ -751,7 +751,7 @@ class Proof:
                     return False
             print(f'Invalid line [{self}]\nassumption is prior: {assumption_is_prior}\nquantifier_is_valid: {quantifier_is_valid}')
             return False
-            # Task 9.7
+            # Harris J. Bolus - Task 9.7
 
         @staticmethod
         def parse(string: str) -> Proof.UGLine:
@@ -815,7 +815,7 @@ class Proof:
             else:
                 print(f'Invalid line: {self}\nThe formula is not a predicate logic tautology because {prop_skeleton} is not a propositional logic tautology')
                 return False
-            # Task 9.9
+            # Harris J. Bolus - Task 9.9
 
         @staticmethod
         def parse(string: str) -> Proof.TautologyLine:
@@ -1105,7 +1105,7 @@ def _axiom_specialization_map_to_schema_instantiation_map(
         pred_formula = Formula.from_propositional_skeleton(specialization, substitution_map)
         new_dict[key.upper()] = pred_formula
     return new_dict
-    # Task 9.11a
+    # Harris J. Bolus - Task 9.11a
 
 def _prove_from_skeleton_proof(formula: Formula,
                                skeleton_proof: PropositionalProof,
@@ -1157,7 +1157,7 @@ def _prove_from_skeleton_proof(formula: Formula,
             lines.append(Proof.MPLine(new_formula, *line.assumptions))
 
     return Proof(PROPOSITIONAL_AXIOMATIC_SYSTEM_SCHEMAS, formula, lines)
-    # Task 9.11b
+    # Harris J. Bolus - Task 9.11b
 
 def prove_tautology(tautology: Formula) -> Proof:
     """Proves the given predicate-logic tautology.
@@ -1177,7 +1177,7 @@ def prove_tautology(tautology: Formula) -> Proof:
     assert skeleton.operators().issubset({'T', 'F', '->', '~', '&', '|'})
     skeleton_proof = prove_propositional_tautology(skeleton).clean()
     return _prove_from_skeleton_proof(tautology, skeleton_proof, substitution_map)
-    # Task 9.12
+    # Harris J. Bolus - Task 9.12
 
 def is_tautology(formula: Union[Formula, str]) -> bool:
     if isinstance(formula, str):
