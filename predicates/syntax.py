@@ -271,7 +271,9 @@ class Term:
         Returns:
             A term whose standard string representation is the given string.
         """
-        return Term._parse_prefix(string)[0]
+        term = Term._parse_prefix(string)[0]
+        assert string == str(term), print(f'Ensure that the string {string} is a well-formed term')
+        return term
         # Harris J. Bolus - Task 7.3b
 
     def constants(self) -> Set[str]:
@@ -643,7 +645,9 @@ class Formula:
         Returns:
             A formula whose standard string representation is the given string.
         """
-        return Formula._parse_prefix(string)[0]
+        formula = Formula._parse_prefix(string)[0]
+        assert string == str(formula), print(f'Ensure that the string {string} is a well-formed formula')
+        return formula
         # Harris J. Bolus - Task 7.4b
 
     def constants(self) -> Set[str]:
