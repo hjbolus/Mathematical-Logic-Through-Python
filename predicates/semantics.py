@@ -158,7 +158,7 @@ class Model(Generic[T]):
             result = self.function_interpretations[root][tuple(self.evaluate_term(argument, assignment) for argument in term.arguments)]
         
         return result
-        # Task 7.7
+        # Harris J. Bolus - Task 7.7
         
     def evaluate_formula(self, formula: Formula,
                          assignment: Mapping[str, T] = frozendict()) -> bool:
@@ -216,7 +216,7 @@ class Model(Generic[T]):
                 
         cache[key] = result
         return result
-        # Task 7.8
+        # Harris J. Bolus - Task 7.8
 
     def find_assignments(self, formula: Formula, assignment: Mapping[str, T] = frozendict(), value: bool = True) -> Set[Formula]:
         """Returns a generator object of assignments for which the formula is true in the model"""
@@ -259,4 +259,4 @@ class Model(Generic[T]):
                 formula = Formula('A', free_variable, formula)
             new_formulas.add(formula)
         return all(self.evaluate_formula(formula) for formula in new_formulas)
-        # Task 7.9
+        # Harris J. Bolus - Task 7.9
