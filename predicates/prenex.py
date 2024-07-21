@@ -64,7 +64,7 @@ def is_quantifier_free(formula: Formula) -> bool:
         otherwise.
     """
     return formula.quantifiers() == set()
-    # Task 11.3a
+    # Harris J. Bolus - Task 11.3a
 
 def is_in_prenex_normal_form(formula: Formula) -> bool:
     """Checks if the given formula is in prenex normal form.
@@ -79,7 +79,7 @@ def is_in_prenex_normal_form(formula: Formula) -> bool:
     while is_quantifier(formula.root):
         formula = formula.statement
     return is_quantifier_free(formula)
-    # Task 11.3b
+    # Harris J. Bolus - Task 11.3b
 
 def equivalence_of(formula1: Formula, formula2: Formula) -> Formula:
     """States the equivalence of the two given formulas as a formula.
@@ -253,7 +253,7 @@ def _uniquely_rename_quantified_variables(formula: Formula) -> \
         return formula, prover.qed()
     else:
         return _uniquely_rename_quantified_variables_helper(formula)
-    # Task 11.5
+    # Harris J. Bolus - Task 11.5
 
 def _pull_out_quantifications_across_negation(formula: Formula) -> \
         Tuple[Formula, Proof]:
@@ -332,7 +332,7 @@ def _pull_out_quantifications_across_negation(formula: Formula) -> \
             step4 = prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
             step5 = prover.add_tautological_implication(equivalence_of(formula, new_formula), {step3, step4})
     return new_formula, prover.qed()
-    # Task 11.6
+    # Harris J. Bolus - Task 11.6
 
 def _pull_out_quantifications_from_left_across_binary_operator(formula:
                                                                Formula) -> \
@@ -475,7 +475,7 @@ def _pull_out_quantifications_from_left_across_binary_operator(formula:
                         'x': variable}
             prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
     return new_formula, prover.qed()
-    # Task 11.7a
+    # Harris J. Bolus - Task 11.7a
 
 def _pull_out_quantifications_from_right_across_binary_operator(formula:
                                                                 Formula) -> \
@@ -598,7 +598,7 @@ def _pull_out_quantifications_from_right_across_binary_operator(formula:
                         'x': variable}
             prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
     return new_formula, prover.qed()
-    # Task 11.7b
+    # Harris J. Bolus - Task 11.7b
 
 def _pull_out_quantifications_across_binary_operator(formula: Formula) -> \
         Tuple[Formula, Proof]:
@@ -673,7 +673,7 @@ def _pull_out_quantifications_across_binary_operator(formula: Formula) -> \
     if stepz:
         prover.add_tautological_implication(equivalence_of(formula, formula2), {step1, stepz})
     return formula2, prover.qed()
-    # Task 11.8
+    # Harris J. Bolus - Task 11.8
 
 def _to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
         Tuple[Formula, Proof]:
@@ -754,7 +754,7 @@ def _to_prenex_normal_form_from_uniquely_named_variables(formula: Formula) -> \
             step3 = prover.add_tautological_implication(prover._lines[step2].formula.second, {step1, step2})
 
     return new_formula, prover.qed()
-    # Task 11.9
+    # Harris J. Bolus - Task 11.9
 
 def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
     """Converts the given formula to an equivalent formula in prenex normal
@@ -808,4 +808,4 @@ def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
         step3 = prover.add_tautological_implication(equivalence_of(formula, prenex_formula), {step1, step2})
 
     return prenex_formula, prover.qed().clean()
-    # Task 11.10
+    # Harris J. Bolus - Task 11.10
