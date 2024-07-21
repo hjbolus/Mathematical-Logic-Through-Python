@@ -232,7 +232,7 @@ def prove_lovers(print_as_proof_forms: bool = False) -> Proof:
     step9 = prover.add_ug('Az[Loves(z,x)]', step8)
     step10 = prover.add_ug('Ax[Az[Loves(z,x)]]', step9)
     return prover.qed()
-    # Task 10.4
+    # Harris J. Bolus - Task 10.4
 
 def prove_homework(print_as_proof_forms: bool = False) -> Proof:
     """Proves from the assumptions:
@@ -265,7 +265,7 @@ def prove_homework(print_as_proof_forms: bool = False) -> Proof:
     step11 = prover.add_mp('((Homework(x)&Reading(x))->Ex[(Reading(x)&~Fun(x))])', step8, step10)
     step12 = prover.add_existential_derivation('Ex[(Reading(x)&~Fun(x))]', step5, step11)
     return prover.qed()
-    # Task 10.5
+    # Harris J. Bolus - Task 10.5
 
 #: The three group axioms
 GROUP_AXIOMS = frozenset({'plus(0,x)=x', 'plus(minus(x),x)=0',
@@ -413,7 +413,7 @@ def prove_group_unique_zero(print_as_proof_forms: bool = False) -> Proof:
     step23 = prover.add_flipped_equality('c=plus(0,c)', step17)
     step24 = prover.add_chained_equality('c=0', [step23, step22, step9, step7, step21, step11])
     return prover.qed()
-    # Task 10.10
+    # Harris J. Bolus - Task 10.10
 
 #: The six field axioms
 FIELD_AXIOMS = frozenset(GROUP_AXIOMS.union(
@@ -497,7 +497,7 @@ def prove_field_zero_multiplication(print_as_proof_forms: bool = False) -> \
 
     prover.add_chained_equality('times(0,x)=0', [step14, step11_1, step12, step9_4, step13, step8])
     return prover.qed()
-    # Task 10.11
+    # Harris J. Bolus - Task 10.11
 
 #: Axiom schema of induction
 INDUCTION_AXIOM = Schema(
@@ -563,7 +563,7 @@ def prove_peano_left_neutral(print_as_proof_forms: bool = False) -> Proof:
     step22 = prover.add_mp('Ax[plus(0,x)=x]', step20, step21)
     step23 = prover.add_universal_instantiation('plus(0,x)=x', step22, 'x')
     return prover.qed()
-    # Task 10.12
+    # Harris J. Bolus - Task 10.12
 
 #: Axiom schema of (unrestricted) comprehension
 COMPREHENSION_AXIOM = Schema(
@@ -594,7 +594,7 @@ def prove_russell_paradox(print_as_proof_forms: bool = False) -> Proof:
     step6 = prover.add_tautological_implication('(Hegel()->Sux(balls))', {step5})
     step7 = prover.add_tautological_implication('(z=z&~z=z)', {step5})
     return prover.qed()
-    # Task 10.13
+    # Harris J. Bolus - Task 10.13
 
 def _prove_not_exists_not_implies_all(variable: str, formula: Formula,
                                       print_as_proof_forms: bool = False) -> \
@@ -626,7 +626,7 @@ def _prove_not_exists_not_implies_all(variable: str, formula: Formula,
     step3 = prover.add_tautological_implication(formula, {step1, step2})
     step4 = prover.add_ug(Formula('A', variable, formula), step3)
     return remove_assumption(prover.qed(), not_exists_not_schema.formula, print_as_proof_forms)
-    # Optional Task 11.4a
+    # Harris J. Bolus - Optional Task 11.4a
 
 def _prove_exists_not_implies_not_all(variable: str, formula: Formula,
                                       print_as_proof_forms: bool = False) -> \
@@ -661,7 +661,7 @@ def _prove_exists_not_implies_not_all(variable: str, formula: Formula,
     step5 = prover.add_instantiated_assumption(Prover.ES.instantiate(inst_map), Prover.ES, inst_map)
     step6 = prover.add_tautological_implication(Formula('~', Formula('A', variable, formula)), {step1, step4, step5})
     return remove_assumption(prover.qed(), exists_not_schema.formula, print_as_proof_forms)
-    # Optional Task 11.4b
+    # Harris J. Bolus - Optional Task 11.4b
 
 def prove_not_all_iff_exists_not(variable: str, formula: Formula,
                                  print_as_proof_forms: bool = False) -> Proof:
@@ -692,4 +692,4 @@ def prove_not_all_iff_exists_not(variable: str, formula: Formula,
                     Formula('E', variable, Formula('~', formula)))
     step3 = prover.add_tautological_implication(conclusion, {step1, step2})
     return prover.qed()
-    # Optional Task 11.4c
+    # Harris J. Bolus - Optional Task 11.4c
