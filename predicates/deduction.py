@@ -95,7 +95,7 @@ def remove_assumption(proof: Proof, assumption: Formula,
                 step = prover.add_ug(line.formula, nonquantified_line_number)
                 step = prover.add_tautological_implication(Formula('->', assumption, line.formula), {step})
     return prover.qed().clean()
-    # Task 11.1
+    # Harris J. Bolus - Task 11.1
 
 def prove_by_way_of_contradiction(proof: Proof, assumption: Formula) -> Proof:
     """Converts the given proof of a contradiction, an assumption of which is
@@ -125,4 +125,4 @@ def prove_by_way_of_contradiction(proof: Proof, assumption: Formula) -> Proof:
     conditional = prover.add_proof(conditional_proof.conclusion, conditional_proof)
     prover.add_tautological_implication(Formula('~', assumption), {conditional})
     return prover.qed()
-    # Task 11.2
+    # Harris J. Bolus - Task 11.2
