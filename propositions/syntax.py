@@ -140,7 +140,7 @@ class Formula:
             assert is_binary(self.root)
             string = '(' + self.first.__repr__() + self.root + self.second.__repr__() + ')'
         return string
-        # Task 1.1
+        # Harris J. Bolus - Task 1.1
 
     def __eq__(self, other: object) -> bool:
         """Compares the current formula with the given one.
@@ -202,7 +202,7 @@ class Formula:
 
         else:
             return set()
-        # Task 1.2
+        # Harris J. Bolus - Task 1.2
 
     @memoized_parameterless_method
     def operators(self) -> Set[str]:
@@ -224,7 +224,7 @@ class Formula:
 
         return operators
 
-        # Task 1.3
+        # Harris J. Bolus - Task 1.3
 
     @staticmethod
     def _parse_prefix(string: str) -> Tuple[Union[Formula, None], str]:
@@ -275,7 +275,7 @@ class Formula:
 
         else:
             return None, "Unexpected input {}".format(string)
-        # Task 1.4
+        # Harris J. Bolus - Task 1.4
 
 
     @staticmethod
@@ -298,7 +298,7 @@ class Formula:
             if suffix.split(' ')[0] == 'Unexpected':
                 return False
         return True
-        # Task 1.5
+        # Harris J. Bolus - Task 1.5
 
     @staticmethod
     def parse(string: str) -> Formula:
@@ -312,7 +312,7 @@ class Formula:
         """
         assert Formula.is_formula(string)
         return Formula._parse_prefix(string)[0]
-        # Task 1.6
+        # Harris J. Bolus - Task 1.6
 
     def polish(self) -> str:
         """Computes the polish notation representation of the current formula.
@@ -341,7 +341,7 @@ class Formula:
 
         else:
             return self.root
-        # Optional Task 1.7
+        # Harris J. Bolus - Optional Task 1.7
 
     @staticmethod
     def _parse_polish_prefix(string: str) -> Tuple[Union[Formula, None], str]:
@@ -370,7 +370,7 @@ class Formula:
                 return Formula(prefix, first, second), suffix
         else:
             return prefix, suffix
-        # Optional Task 1.8
+        # Harris J. Bolus - Optional Task 1.8
 
     @staticmethod
     def parse_polish(string: str) -> Formula:
@@ -413,7 +413,7 @@ class Formula:
             elif is_binary(self.root):
                 return Formula(self.root, Formula.substitute_variables(self.first, substitution_map), Formula.substitute_variables(self.second, substitution_map))
         return self
-        # Task 3.3
+        # Harris J. Bolus - Task 3.3
 
     def substitute_operators(self, substitution_map: Mapping[str, Formula]) -> Formula:
         """Substitutes in the current formula, each constant or operator `op`
@@ -466,4 +466,4 @@ class Formula:
                         self = Formula(self.root, Formula.substitute_operators(self.first, substitution_map), Formula.substitute_operators(self.second, substitution_map))
 
         return self
-        # Task 3.4
+        # Harris J. Bolus - Task 3.4
