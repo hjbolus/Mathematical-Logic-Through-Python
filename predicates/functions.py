@@ -72,7 +72,7 @@ def replace_functions_with_relations_in_model(model: Model[T]) -> Model[T]:
         new_relation_interpretations[function_name_to_relation_name(function_name)] = {(model.function_interpretations[function_name][arguments],*arguments) for arguments in model.function_interpretations[function_name]}
 
     return Model(model.universe, model.constant_interpretations, new_relation_interpretations, dict())
-    # Task 8.1
+    # Harris J. Bolus - Task 8.1
 
 def replace_relations_with_functions_in_model(model: Model[T],
                                               original_functions:
@@ -113,7 +113,7 @@ def replace_relations_with_functions_in_model(model: Model[T],
         else:
             new_function_interpretations[function_name] = function_dict
     return Model(model.universe, model.constant_interpretations, relation_interpretations, new_function_interpretations)
-    # Task 8.2
+    # Harris J. Bolus - Task 8.2
 
 def _compile_term(term: Term) -> List[Formula]:
     """Syntactically compiles the given term into a list of single-function
@@ -149,7 +149,7 @@ def _compile_term(term: Term) -> List[Formula]:
             new_arguments.append(argument)
     pile.append(Formula('=',[Term.parse(next(fresh_variable_name_generator)),Term(term.root, new_arguments)]))
     return pile
-    # Task 8.3
+    # Harris J. Bolus - Task 8.3
 
 def replace_functions_with_relations_in_formula(formula: Formula) -> Formula:
     """Syntactically converts the given formula to a formula that does not
@@ -206,7 +206,7 @@ def replace_functions_with_relations_in_formula(formula: Formula) -> Formula:
                                 formula.variable,
                                 replace_functions_with_relations_in_formula(formula.statement))
     return new_formula
-    # Task 8.4
+    # Harris J. Bolus - Task 8.4
 
 def replace_functions_with_relations_in_formulas(formulas:
                                                  AbstractSet[Formula]) -> \
@@ -272,7 +272,7 @@ def replace_functions_with_relations_in_formulas(formulas:
 
         new_formulas.add(Formula('&', existence_formula, uniqueness_formula))
     return new_formulas
-    # Task 8.5
+    # Harris J. Bolus - Task 8.5
 
 def translate_equality_to_SAME(formula):
     root = formula.root
@@ -366,7 +366,7 @@ def replace_equality_with_SAME_in_formulas(formulas: AbstractSet[Formula]) -> \
         new_formulas.append(new_formula)
 
     return new_formulas
-    # Task 8.6
+    # Harris J. Bolus - Task 8.6
 
 def add_SAME_as_equality_in_model(model: Model[T]) -> Model[T]:
     """Adds an interpretation of the relation name 'SAME' in the given
@@ -386,7 +386,7 @@ def add_SAME_as_equality_in_model(model: Model[T]) -> Model[T]:
     new_relation_interpretations = dict(model.relation_interpretations)
     new_relation_interpretations['SAME'] = {(i,i) for i in model.universe}
     return Model(model.universe, model.constant_interpretations, new_relation_interpretations, model.function_interpretations)
-    # Task 8.7
+    # Harris J. Bolus - Task 8.7
 
 def make_equality_as_SAME_in_model(model: Model[T]) -> Model[T]:
     """Converts the given model to a model where equality coincides with the
@@ -450,4 +450,4 @@ def make_equality_as_SAME_in_model(model: Model[T]) -> Model[T]:
             new_tuples.append(tuple(equivalence_dict[i] for i in _tuple))
         new_relation_interpretations[relation] = new_tuples
     return Model(new_universe, new_constant_interpretations, new_relation_interpretations, model.function_interpretations)
-    # Task 8.8
+    # Harris J. Bolus - Task 8.8
