@@ -90,7 +90,7 @@ def is_primitively_closed(sentences: AbstractSet[Formula]) -> bool:
             if not (formula in sentences or Formula('~',formula) in sentences):
                 return False
     return True
-    # Task 12.1a
+    # Harris J. Bolus - Task 12.1a
 
 def is_universally_closed(sentences: AbstractSet[Formula]) -> bool:
     """Checks whether the given set of prenex-normal-form sentences is
@@ -118,7 +118,7 @@ def is_universally_closed(sentences: AbstractSet[Formula]) -> bool:
                 if not sentence.statement.substitute({sentence.variable: constant}) in sentences:
                     return False
     return True
-    # Task 12.1b
+    # Harris J. Bolus - Task 12.1b
 
 def is_existentially_closed(sentences: AbstractSet[Formula]) -> bool:
     """Checks whether the given set of prenex-normal-form sentences is
@@ -144,7 +144,7 @@ def is_existentially_closed(sentences: AbstractSet[Formula]) -> bool:
             if not any(sentence.statement.substitute({sentence.variable: constant}) in sentences for constant in constant_names):
                 return False
     return True
-    # Task 12.1c
+    # Harris J. Bolus - Task 12.1c
 
 def find_unsatisfied_quantifier_free_sentence(sentences: Container[Formula],
                                               model: Model[str],
@@ -192,7 +192,7 @@ def find_unsatisfied_quantifier_free_sentence(sentences: Container[Formula],
             if (u:=unsatisfied.statement.substitute({unsatisfied.variable: Term(constant)})) in sentences:
                 if not model.evaluate_formula(u):
                     return find_unsatisfied_quantifier_free_sentence(sentences, model, u)
-    # Task 12.2
+    # Harris J. Bolus - Task 12.2
 
 def get_primitives(quantifier_free: Formula) -> Set[Formula]:
     """Finds all primitive subformulas of the given quantifier-free formula.
@@ -219,7 +219,7 @@ def get_primitives(quantifier_free: Formula) -> Set[Formula]:
         return get_primitives(quantifier_free.first)
     else:
         return get_primitives(quantifier_free.first) | get_primitives(quantifier_free.second)
-    # Task 12.3a
+    # Harris J. Bolus - Task 12.3a
 
 def model_or_inconsistency(sentences: AbstractSet[Formula]) -> \
         Union[Model[str], Proof]:
@@ -266,7 +266,7 @@ def model_or_inconsistency(sentences: AbstractSet[Formula]) -> \
             prover.add_tautological_implication('((P()-&(P()-&P()))-&(P()-&(P()-&P())))', premises)
             return prover.qed()
     return model
-    # Task 12.3b
+    # Harris J. Bolus - Task 12.3b
 
 def combine_contradictions(proof_from_affirmation: Proof,
                            proof_from_negation: Proof) -> Proof:
@@ -317,7 +317,7 @@ def combine_contradictions(proof_from_affirmation: Proof,
     step2 = prover.add_proof(proof2.conclusion, proof2)
     prover.add_tautological_implication('(P()-|(P()-|P()))', {step1, step2})
     return prover.qed().clean()
-    # Task 12.4
+    # Harris J. Bolus - Task 12.4
 
 def eliminate_universal_instantiation_assumption(proof: Proof,
                                                  universal: Formula,
@@ -363,7 +363,7 @@ def eliminate_universal_instantiation_assumption(proof: Proof,
     step4 = prover.add_mp(statement.substitute({variable: Term(constant)}), step2, step3)
     step5 = prover.add_tautological_implication('~((P()-|P())<->(P()-&P()))', {step1, step4})
     return prover.qed()
-    # Task 12.5
+    # Harris J. Bolus - Task 12.5
 
 def universal_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
     """Augments the given sentences with all universal instantiations of each
@@ -391,7 +391,7 @@ def universal_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
             for constant in constants:
                 new_sentences.add(sentence.statement.substitute({sentence.variable: constant}))
     return new_sentences
-    # Task 12.6
+    # Harris J. Bolus - Task 12.6
 
 def replace_constant(proof: Proof, constant: str, variable: str = 'zz') -> \
         Proof:
@@ -461,7 +461,7 @@ def replace_constant(proof: Proof, constant: str, variable: str = 'zz') -> \
 
     new_conclusion = new_lines[-1].formula
     return Proof(new_assumptions, new_conclusion, new_lines)
-    # Task 12.7a
+    # Harris J. Bolus - Task 12.7a
 
 def eliminate_existential_witness_assumption(proof: Proof,
                                              existential: Formula,
@@ -530,7 +530,7 @@ def eliminate_existential_witness_assumption(proof: Proof,
     step8 = prover.add_tautological_implication('~(~~P()->~~~~P())', {step1, step7})
     
     return prover.qed()
-    # Task 12.7b
+    # Harris J. Bolus - Task 12.7b
 
 def existential_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
     """Augments the given sentences with an existential witness that uses a new
@@ -560,4 +560,4 @@ def existential_closure_step(sentences: AbstractSet[Formula]) -> Set[Formula]:
             else:
                 new_sentences.add(sentence.statement.substitute({sentence.variable: Term(next(fresh_constant_name_generator))}))
     return new_sentences
-    # Task 12.8
+    # Harris J. Bolus - Task 12.8
