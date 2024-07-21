@@ -35,7 +35,7 @@ def rule_nonsoundness_from_specialization_nonsoundness(
     for key in map1.keys():
         g_model[key] = evaluate(map1[key], model)
     return g_model
-    # Task 4.9
+    # Harris J. Bolus - Task 4.9
 
 def nonsound_rule_of_nonsound_proof(proof: Proof, model: Model) -> \
         Tuple[InferenceRule, Model]:
@@ -60,4 +60,4 @@ def nonsound_rule_of_nonsound_proof(proof: Proof, model: Model) -> \
             break
     assert not is_sound_inference(suspect.rule)
     return (suspect.rule, rule_nonsoundness_from_specialization_nonsoundness(suspect.rule, proof.rule_for_line(i), model))
-    # Task 4.10
+    # Harris J. Bolus - Task 4.10
