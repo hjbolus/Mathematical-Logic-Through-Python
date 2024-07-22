@@ -149,4 +149,4 @@ The function `proof_or_counterexample_full(formula)`, if `formula` is a tautolog
 
 On the other hand, if a formula is satisfiable, `model_or_inconsistency_full(formula)` returns a model in which it evaluates to True; otherwise it returns a proof of a contradiction derived by assuming `formula`.
 
-In order to evaluate if an FOL formula is a tautology, functions for prediate logic convert the formula to a propositional skeleton and take advantage of methods from propositional logic to determine it easily.
+In order to evaluate if an FOL formula is a tautology, functions for predicate logic convert the formula to a propositional skeleton and take advantage of methods from propositional logic.
