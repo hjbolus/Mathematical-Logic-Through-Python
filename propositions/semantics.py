@@ -62,33 +62,36 @@ def evaluate(formula: Formula, model: Model) -> bool:
     """
     assert is_model(model)
     assert formula.variables().issubset(variables(model))
-    if is_constant(formula.root):
-        if formula.root == 'T':
+    root = formula.root
+    if is_constant(root):
+        if root == 'T':
             return True
-        elif formula.root == 'F':
+        elif root == 'F':
             return False
-    elif is_variable(formula.root):
-        return model[formula.root]
-    elif is_unary(formula.root):
+    elif is_variable(root):
+        return model[root]
+    elif is_unary(root):
         return not evaluate(formula.first, model)
-    elif is_binary(formula.root):
-        if formula.root == '&':
+    elif is_binary(root):
+        if root == '&':
             return evaluate(formula.first, model) and evaluate(formula.second, model)
-        elif formula.root == '|':
+        elif root == '|':
             return evaluate(formula.first, model) or evaluate(formula.second, model)
-        elif formula.root == '->':
+        elif root == '->':
             if not evaluate(formula.first, model):
                 return True
             else:
                 return evaluate(formula.second, model)
-        elif formula.root == '-&':
+        elif root == '-&':
             return not (evaluate(formula.first, model) and evaluate(formula.second, model))
-        elif formula.root == '-|':
+        elif root == '-|':
             return (not evaluate(formula.first, model)) and (not evaluate(formula.second, model))
-        elif formula.root == '+':
+        elif root == '+':
             return evaluate(formula.first, model) != evaluate(formula.second, model)
-        elif formula.root == '<->':
+        else:
+            assert root == '<->':
             return evaluate(formula.first, model) == evaluate(formula.second, model)
+            
     # Harris J. Bolus - Task 2.1
 
 def all_models(variables: Sequence[str]) -> Iterable[Model]:
@@ -178,7 +181,7 @@ def is_contradiction(formula: Formula) -> bool:
     Returns:
         ``True`` if the given formula is a contradiction, ``False`` otherwise.
     """
-    return not any(truth_values(formula,all_models(Formula.variables(formula))))
+    return not any(truth_values(formula, all_models(Formula.variables(formula))))
     # Harris J. Bolus - Task 2.5b
 
 def is_satisfiable(formula: Formula) -> bool:
@@ -190,7 +193,7 @@ def is_satisfiable(formula: Formula) -> bool:
     Returns:
         ``True`` if the given formula is satisfiable, ``False`` otherwise.
     """
-    return any(truth_values(formula,all_models(Formula.variables(formula))))
+    return any(truth_values(formula, all_models(Formula.variables(formula))))
     # Harris J. Bolus - Task 2.5c
 
 def _synthesize_for_model(model: Model) -> Formula:
@@ -323,14 +326,14 @@ def synthesize_cnf(variables: Sequence[str], values: Iterable[bool]) -> Formula:
     if conjuncts:
         formula = conjuncts.pop(0)
         while conjuncts:
-            formula = Formula('&',formula,conjuncts.pop(0))
+            formula = Formula('&', formula,conjuncts.pop(0))
     else:
         var = Formula(variables.pop(0))
-        formula = Formula('|',var, Formula('~',var))
+        formula = Formula('|', var, Formula('~', var))
         while variables:
             second = Formula(variables.pop(0))
-            second = Formula('|',second, Formula('~',second))
-            formula = Formula('&',formula, second)
+            second = Formula('|', second, Formula('~', second))
+            formula = Formula('&', formula, second)
     return formula
     # Harris J. Bolus - Optional Task 2.9
 
