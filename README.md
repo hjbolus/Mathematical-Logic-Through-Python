@@ -100,7 +100,7 @@ You can inline proofs using `Prover` objects by using the method `add_proof(proo
 The section on propositional logic includes many similar classes, methods, and functions. The major difference is that any proof from a certain set of axioms can be generated automatically using functions described below. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
 ## Semantics
-Given any set of constant names, the function `all models()` returns all possible combinations of assignments of True and False to them.
+Given any set of constant names, the function `all_models()` returns all possible combinations of assignments of True and False to them.
 
 `In [1]: all_models(('p', 'q'))`  
 
@@ -110,9 +110,9 @@ By evaluating a given formula over all models, functions implemented in the file
 
 `In [2]: formula = Formula.parse('~(q&p)')`  
 
-`In [2]: print_truth_table(formula)`  
+`In [3]: print_truth_table(formula)`  
 
-`Out[2]: `  
+`Out[3]: `  
 | p | q | ~(q&p) |
 |---|----|---------|
 | F | F  | T       |
@@ -125,13 +125,13 @@ It can also go the other direction, by synthesizing a formula in CNF or DNF to c
 ## Automated proofs
 Given a formula and a model, if the formula evaluates to True in the model, `prove_in_model_full(formula, model) `returns a valid proof of the formula. If the formula evalutes to False in the model, it returns a valid proof of its negation.
 
-`In [3]: formula = Formula.parse('(p->q)')`  
+`In [4]: formula = Formula.parse('(p->q)')`  
 
-`In [4]: model = {'p': True, 'q': False}`  
+`In [5]: model = {'p': True, 'q': False}`  
 
-`In [5]: prove_in_model_full(formula, model)`  
+`In [6]: prove_in_model_full(formula, model)`  
 
-`Out [5]: Proof of ['p', '~q'] ==> '~(p->q)' via inference rules:`  
+`Out [6]: Proof of ['p', '~q'] ==> '~(p->q)' via inference rules:`  
 `  [] ==> '~F'`  
 `  ...`  
 `  [] ==> '((~q->~p)->(p->q))'`  
