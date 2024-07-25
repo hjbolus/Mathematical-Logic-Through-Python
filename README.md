@@ -123,7 +123,7 @@ By evaluating a given formula over all models, functions implemented in the file
 It can also go the other direction, by synthesizing a formula in CNF or DNF to capture a particular model or set of models, using the functions `synthesize()` or `synthesize_cnf()`.
 
 ## Automated proofs
-Given a formula and a model, if the formula evaluates to True in the model, `prove_in_model_full(formula, model) `returns a valid proof of the formula. If the formula evalutes to False in the model, it returns a valid proof of its negation.
+Given a formula and a model, if the formula evaluates to True in the model, `prove_in_model_full(formula, model)` returns a valid proof of the formula. If the formula evalutes to False in the model, it returns a valid proof of its negation.
 
 `In [4]: formula = Formula.parse('(p->q)')`  
 
