@@ -254,7 +254,7 @@ def prove_homework(print_as_proof_forms: bool = False) -> Proof:
                      'Ex[(Homework(x)&Reading(x))]'}, print_as_proof_forms)
     step1 = prover.add_assumption('~Ex[(Homework(x)&Fun(x))]')
     step2 = prover.add_instantiated_assumption('((Homework(x)&Fun(x))->Ex[(Homework(x)&Fun(x))])', Prover.EI, {'R': '(Homework(_)&Fun(_))', 'c': 'x'})
-    step3 = prover.add_tautological_implication('~(Homework(x)&Fun(x)))',{step1,step2})
+    step3 = prover.add_tautological_implication('~(Homework(x)&Fun(x))',{step1,step2})
     step5 = prover.add_assumption('Ex[(Homework(x)&Reading(x))]')
     step6 = prover.add_tautology('(~(Homework(x)&Fun(x))->((Homework(x)&Reading(x))->(Reading(x)&~Fun(x))))')
     step7 = prover.add_mp('((Homework(x)&Reading(x))->(Reading(x)&~Fun(x)))', step3, step6)
@@ -584,7 +584,7 @@ def prove_russell_paradox(print_as_proof_forms: bool = False) -> Proof:
     prover = Prover({COMPREHENSION_AXIOM}, print_as_proof_forms)
     COMPREHENSION_AXIOM.instantiate({'R': Formula.parse('~In(_,_)')})
     step1 = prover.add_instantiated_assumption(COMPREHENSION_AXIOM.instantiate({'R': Formula.parse('~In(_,_)')}), COMPREHENSION_AXIOM, {'R': Formula.parse('~In(_,_)')})
-    inst_map = {'R': Formula.parse('((In(_,y)->~In(_,_))&(~In(_,_)->In(_,y)))]'), 
+    inst_map = {'R': Formula.parse('((In(_,y)->~In(_,_))&(~In(_,_)->In(_,y)))'), 
                 'c': Term.parse('y'), 
                 'x': 'x'}
     step2 = prover.add_instantiated_assumption(Prover.UI.instantiate(inst_map), Prover.UI, inst_map)
