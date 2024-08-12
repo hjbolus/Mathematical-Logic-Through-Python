@@ -188,11 +188,10 @@ def _uniquely_rename_quantified_variables_helper(formula):
             #then I just need to change one variable to go from inner_sub_formula to new_formula
             prover = Prover(Prover.AXIOMS.union(ADDITIONAL_QUANTIFICATION_AXIOMS))
             step1 = prover.add_proof(proof_of_inner_subs.conclusion, proof_of_inner_subs)
-            inst_map = {
-                    'R': formula.statement.substitute({variable:Term('_')}),
-                    'Q': inner_sub_formula.substitute({variable: Term('_')}),
-                    'x': variable,
-                    'y': new_variable}
+            inst_map = {'R': formula.statement.substitute({variable:Term('_')}),
+                        'Q': inner_sub_formula.substitute({variable: Term('_')}),
+                        'x': variable,
+                        'y': new_variable}
             step2 = prover.add_instantiated_assumption(schema.instantiate(inst_map), schema, inst_map)
             step3 = prover.add_mp(prover._lines[step2].formula.second, step1, step2)
 
@@ -445,8 +444,8 @@ def _pull_out_quantifications_from_left_across_binary_operator(formula:
             if is_quantifier_free(intermediate_formula):
                 #prove (Ax[T(x)]&S()) <-> Ax[T(x)&S()]
                 inst_map = {'R': first_statement.substitute({variable: Term('_')}),
-                        'Q': second.substitute({variable: Term('_')}),
-                        'x': variable}
+                            'Q': second.substitute({variable: Term('_')}),
+                            'x': variable}
                 prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
 
             else:
@@ -572,8 +571,8 @@ def _pull_out_quantifications_from_right_across_binary_operator(formula:
 
             if is_quantifier_free(intermediate_formula):
                 inst_map = {'R': second_statement.substitute({variable: Term('_')}),
-                        'Q': first.substitute({variable: Term('_')}),
-                        'x': variable}
+                            'Q': first.substitute({variable: Term('_')}),
+                            'x': variable}
                 prover.add_instantiated_assumption(transfer_schema.instantiate(inst_map), transfer_schema, inst_map)
 
             else:
