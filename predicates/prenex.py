@@ -796,8 +796,8 @@ def to_prenex_normal_form(formula: Formula) -> Tuple[Formula, Proof]:
         prenex_formula = formula
         
     elif has_uniquely_named_variables(formula):
-        prenex_formula, prenex_proof = _to_prenex_normal_form_from_uniquely_named_variables(renamed_formula)
-        prover.add_proof(prenex_proof)
+        prenex_formula, prenex_proof = _to_prenex_normal_form_from_uniquely_named_variables(formula)
+        prover.add_proof(prenex_proof.conclusion, prenex_proof)
         
     else:
         renamed_formula, renaming_proof = _uniquely_rename_quantified_variables(formula)
