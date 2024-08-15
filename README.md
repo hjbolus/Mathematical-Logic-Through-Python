@@ -64,7 +64,6 @@ Although functions and equality are allowed by default, the file functions.py in
 `  Schema: c=c [templates: c]`  
 `Lines:`  
 `  0) (Ax[(Man(x)->Mortal(x))]->(Man(aristotle)->Mortal(aristotle)))    (Assumption Schema: (Ax[R(x)]->R(c)) [templates: R, c, x] instantiated with {'R': (Man(_)->Mortal(_)), 'c': aristotle})`  
-`  1) Man(aristotle)    (Assumption Schema: Man(aristotle) [templates: none] instantiated with {})`  
 `  ...`  
 `  6) (Ax[(Man(x)->Mortal(x))]->Mortal(aristotle))    (MP from lines 3 and 5)`  
 `QED`  
