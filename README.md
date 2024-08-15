@@ -65,7 +65,7 @@ Although functions and equality are allowed by default, the file functions.py in
 `Lines:`  
 `  0) Ax[(Man(x)->Mortal(x))]    (Assumption Schema: Ax[(Man(x)->Mortal(x))] [templates: none] instantiated with {})`  
 `  ...`  
-`  12) (Man(aristotle)->Mortal(aristotle))    (MP from lines 9 and 11)`  
+`  6) (Man(aristotle)->Mortal(aristotle))    (MP from lines 3 and 5)`  
 `QED`  
 
 Moreover, any formula can be converted to prenex normal form using the function `to_prenex_normal_form()`, which returns a a prenex equivalent as well as a proof of the equivalence. In the process, if any quantifiers share variable names, then they will all be replaced with unique ones, leading to unfortunate names like `z15`. For example:
