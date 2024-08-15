@@ -31,7 +31,7 @@ Although functions and equality are allowed by default, the file functions.py in
 ## Proofs
   Proofs are stored as `Proof` objects, and are composed of a set of assumptions (`Schema` objects), an ordered sequence of lines each of which contains a formula and justification, and a conclusion which is stated both at the outset and as the last line of the proof. The following short proof shows how this data structure is represented:
 
-`In [5]: proof = prove_syllogism()`  
+`In [5]: proof = prove_syllogism() # a proof stored in a function (for nefarious reasons)`  
 
 `In [6]: proof`  
 
