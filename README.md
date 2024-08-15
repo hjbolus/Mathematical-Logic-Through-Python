@@ -58,16 +58,16 @@ Although functions and equality are allowed by default, the file functions.py in
 
 `In [8]: remove_assumption(proof, formula)`  
 
-`Out [8]: Proof of (Ax[(Man(x)->Mortal(x))]->Mortal(aristotle)) from assumptions/axioms:`
-`  Schema: Man(aristotle) [templates: none]`
-`  ...`
-`  Schema: c=c [templates: c]`
-`Lines:`
-`  0) (Ax[(Man(x)->Mortal(x))]->(Man(aristotle)->Mortal(aristotle)))    (Assumption Schema: (Ax[R(x)]->R(c)) [templates: R, c, x] instantiated with {'R': (Man(_)->Mortal(_)), 'c': aristotle})`
-`  1) Man(aristotle)    (Assumption Schema: Man(aristotle) [templates: none] instantiated with {})`
-`  ...`
-`  6) (Ax[(Man(x)->Mortal(x))]->Mortal(aristotle))    (MP from lines 3 and 5)`
-`QED`
+`Out [8]: Proof of (Ax[(Man(x)->Mortal(x))]->Mortal(aristotle)) from assumptions/axioms:`  
+`  Schema: Man(aristotle) [templates: none]`  
+`  ...`  
+`  Schema: c=c [templates: c]`  
+`Lines:`  
+`  0) (Ax[(Man(x)->Mortal(x))]->(Man(aristotle)->Mortal(aristotle)))    (Assumption Schema: (Ax[R(x)]->R(c)) [templates: R, c, x] instantiated with {'R': (Man(_)->Mortal(_)), 'c': aristotle})`  
+`  1) Man(aristotle)    (Assumption Schema: Man(aristotle) [templates: none] instantiated with {})`  
+`  ...`  
+`  6) (Ax[(Man(x)->Mortal(x))]->Mortal(aristotle))    (MP from lines 3 and 5)`  
+`QED`  
 
 Moreover, any formula can be converted to prenex normal form using the function `to_prenex_normal_form()`, which returns a a prenex equivalent as well as a proof of the equivalence. In the process, if any quantifiers share variable names, then they will all be replaced with unique ones, leading to unfortunate names like `z15`. For example:
 
