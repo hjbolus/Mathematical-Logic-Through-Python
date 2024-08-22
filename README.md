@@ -100,9 +100,9 @@ You can inline proofs using `Prover` objects by using the method `add_proof(proo
 The section on propositional logic includes many similar classes, methods, and functions. The major difference is that any proof from a certain set of axioms can be generated automatically using functions described below. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
 ## Semantics
-Given any set of constant names, the function `all_models()` returns all possible combinations of assignments of True and False to them.
+Given any set of constant names, the function `all_models()` returns (a generator yielding) all possible combinations of assignments of True and False to them.
 
-`In [1]: all_models(('p', 'q'))`  
+`In [1]: list(all_models(('p', 'q')))`  
 
 `Out [1]: [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]`   
 
