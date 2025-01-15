@@ -467,3 +467,69 @@ class Formula:
 
         return self
         # Harris J. Bolus - Task 3.4
+
+    def _frege_helper(self: Formula) -> str:
+        """Computes a representation of the current formula, which contains only
+       the operators `~` and `->`, in Frege's notation, lacking a turnstyle.
+
+        Returns:
+            The Fregean notation representation of the current formula, lacking
+            a turnstyle.
+        """
+        # ─ ⊢ │ ├ ┤ ┬ ┴ ┌ ┐ └ ┘ ╞ ╡ 
+        root = self.root
+        if is_binary(root):
+            first = self.first._frege_helper()
+            second = self.second._frege_helper()
+            diff = len(first[0])-len(second[0])
+            
+            if diff > 0:
+                second[0] = '─'*diff+second[0]
+            second[0] = '─┬'+second[0]
+            if len(second) > 1:
+                for i in range(1, len(second)):
+                    if diff > 0:
+                        second[i] = ' '*diff+second[i]
+                    second[i] = ' │'+second[i]
+                    
+            if diff < 0:
+                first[0] = '─'*(diff*-1)+first[0]
+            first[0] = ' └'+first[0]
+            if len(first) > 1:
+                for i in range(1, len(first)):
+                    if diff < 0:
+                        first[i] = ' '*(diff*-1)+first[i]
+                    first[i] = '  '+first[i]
+            return [*second, *first]
+            
+        elif is_unary(root):
+            first = self.first._frege_helper()
+            first[0] = '─┬'+first[0]
+            if len(first) > 1:
+                for i in range(1, len(first)):
+                    first[i] = '  '+first[i]
+            return first
+
+        else:
+            assert is_variable(root) or is_constant(root)
+            return ['─ '+str(self)]
+    # Personal task - Harris J. Bolus
+
+    def frege(self: Formula) -> str:
+        """Computes a representation of the current formula in Frege's notation.
+
+        Returns:
+            A Fregean notation representation of the current formula.
+        """
+        sub_map = { 'T': Formula.parse('(p->p)'),
+                'F': Formula.parse('~(p->p)'),
+                '&': Formula.parse('~(p->~q)'),
+                '|': Formula.parse('(~p->q)'),
+                '+': Formula.parse('((p->q)->~(q->p))'),
+                '-|': Formula.parse('~(~p->q)'),
+                '-&': Formula.parse('(p->~q)'),
+                '<->': Formula.parse('~((p->q)->~(q->p))')}
+        formula = Formula.substitute_operators(self, sub_map)
+        string = formula._frege_helper()
+        print('├─'+'\n  '.join(string))
+    # Personal task - Harris J. Bolus
