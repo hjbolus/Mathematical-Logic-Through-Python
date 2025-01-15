@@ -97,6 +97,23 @@ You can inline proofs using `Prover` objects by using the method `add_proof(proo
 # Propositional logic
 The section on propositional logic includes many similar classes, methods, and functions. The major difference is that any proof from a certain set of axioms can be generated automatically using functions described below. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
+## Syntax
+Formulas are be represented in traditional infix notation by default, but can be translated to Polish notation using the method polish() or can be displayed in Fregean notation using the method frege(). For example:
+
+`In [1]: Formula.parse('(p->q)').frege()`  
+
+`Out [1]: `  
+`├──┬─ q`  
+`   └─ p`  
+
+`In [2]: Formula.parse('((~p->q)->~(p->~q))').frege()`  
+
+`Out [2]:`  
+`├──┬─┬─┬─┬─ q`  
+`   │   └─── p`  
+`   └───┬─── q`  
+`       └─┬─ p`  
+
 ## Semantics
 Given any set of constant names, the function `all_models()` returns (a generator yielding) all possible combinations of assignments of True and False to them.
 
