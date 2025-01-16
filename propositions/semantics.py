@@ -64,10 +64,7 @@ def evaluate(formula: Formula, model: Model) -> bool:
     assert formula.variables().issubset(variables(model))
     root = formula.root
     if is_constant(root):
-        if root == 'T':
-            return True
-        elif root == 'F':
-            return False
+        return formula.root == 'T'
     elif is_variable(root):
         return model[root]
     elif is_unary(root):
@@ -78,18 +75,14 @@ def evaluate(formula: Formula, model: Model) -> bool:
         elif root == '|':
             return evaluate(formula.first, model) or evaluate(formula.second, model)
         elif root == '->':
-            if not evaluate(formula.first, model):
-                return True
-            else:
-                return evaluate(formula.second, model)
+            return not evaluate(formula.first, model) or evaluate(formula.second, model)
         elif root == '-&':
             return not (evaluate(formula.first, model) and evaluate(formula.second, model))
         elif root == '-|':
-            return (not evaluate(formula.first, model)) and (not evaluate(formula.second, model))
+            return not (evaluate(formula.first, model) or evaluate(formula.second, model))
         elif root == '+':
             return evaluate(formula.first, model) != evaluate(formula.second, model)
-        else:
-            assert root == '<->':
+        elif root == '<->':
             return evaluate(formula.first, model) == evaluate(formula.second, model)
             
     # Harris J. Bolus - Task 2.1
