@@ -192,14 +192,11 @@ class Model(Generic[T]):
             elif root == '|':
                 result = self.evaluate_formula(formula.first, assignment) or self.evaluate_formula(formula.second, assignment)
             elif root == '->':
-                if not self.evaluate_formula(formula.first, assignment):
-                    result = True
-                else:
-                    result = self.evaluate_formula(formula.second, assignment)
+                result = not self.evaluate_formula(formula.first, assignment) or self.evaluate_formula(formula.second, assignment)
             elif root == '-&':
                 result = not (self.evaluate_formula(formula.first, assignment) and self.evaluate_formula(formula.second, assignment))
             elif root == '-|':
-                result = not (self.evaluate_formula(formula.first, assignment)) and (not self.evaluate_formula(formula.second, assignment))
+                result = not (self.evaluate_formula(formula.first, assignment) or self.evaluate_formula(formula.second, assignment))
             elif root == '+':
                 result = self.evaluate_formula(formula.first, assignment) != self.evaluate_formula(formula.second, assignment)
             elif root == '<->':
