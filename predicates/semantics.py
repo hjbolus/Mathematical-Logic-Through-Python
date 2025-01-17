@@ -181,7 +181,7 @@ class Model(Generic[T]):
             
         root = formula.root
         if is_equality(root):
-            result = self.evaluate_term(formula.arguments[0], assignment) == self.evaluate_term(formula.arguments[1], assignment)
+            result = self.evaluate_term(formula.arguments[0], assignment) is self.evaluate_term(formula.arguments[1], assignment)
         elif is_relation(root):
             result = tuple(self.evaluate_term(argument, assignment) for argument in formula.arguments) in self.relation_interpretations[root]
         elif is_unary(root):
