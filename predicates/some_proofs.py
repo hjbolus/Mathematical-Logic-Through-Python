@@ -389,12 +389,9 @@ def prove_group_unique_zero(print_as_proof_forms: bool = False) -> Proof:
 
     inst_map = {'x': Term.parse('minus(a)'), 'y': 'a', 'z': 'c'}
     step9 = prover.add_free_instantiation('plus(plus(minus(a),a),c)=plus(minus(a),plus(a,c))', step8, inst_map)
-    inst_map = {'x': Term.parse('minus(a)'), 'y': 'a', 'z': '0'}
 
     step10 = prover.add_assumption('plus(minus(x),x)=0')
     step11 = prover.add_free_instantiation('plus(minus(a),a)=0', step10, {'x':'a'})
-    inst_map = {'R': Formula.parse('plus(plus(minus(a),a),0)=plus(_,0)'), 'c': Term.parse('plus(minus(a),a)'), 'd': Term('0')}
-
     step12 = prover.add_assumption('plus(0,x)=x')
 
     inst_map = {'R': Formula.parse('plus(plus(minus(a),a),c)=plus(_,c)'), 'c': Term.parse('plus(minus(a),a)'), 'd': Term('0')}
