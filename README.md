@@ -83,8 +83,7 @@ Moreover, any formula can be converted to prenex normal form using the function 
 `  0) (((R(x,y)->R(x,y))&(R(x,y)->R(x,y)))->((Ey[R(x,y)]->Ez2[R(x,z2)])&(Ez2[R(x,z2)]->Ey[R(x,y)])))    (Assumption Schema: (((R(x)->Q(x))&(Q(x)->R(x)))->((Ex[R(x)]->Ey[Q(y)])&(Ey[Q(y)]->Ex[R(x)]))) [templates: Q, R, x, y] instantiated with {'R': R(x,_), 'Q': R(x,_), 'x': 'y', 'y': 'z2'})`  
 `  ...`  
 `  114) ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]])&`  
-`(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))`  
-`(MP from lines 111 and 113)`  
+`(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
 
 Duplicated and unnecessary lines can be removed from proofs using the `clean()` method that I added, without changing the validity of the proof.
