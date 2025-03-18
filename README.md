@@ -76,7 +76,8 @@ Moreover, any formula can be converted to prenex normal form using the function 
 
 `In [11]: proof`  
 
-`Out [11]: Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]])&(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:`  
+`Out [11]: Proof of ((~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])->Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]])&`  
+`(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]]))) from assumptions/axioms:`  
 `  Schema: (Ax[R(x)]->R(c)) [templates: R, c, x]`  
 `  ...`  
 `Lines:`  
