@@ -99,20 +99,19 @@ You can inline proofs using `Prover` objects by using the method `add_proof(proo
 ## Additions
 Of note, I added a file called `Operators.py`, with functions that translate a formula that uses one set of operators to one that uses a different set. This is similar to the file `Operators.py` in Propositions, with the addition that it is used to allow representation of FOL formulae in Fregean notation by first translating operators to ~ and ->.
 
-`In [12]: formula = Formula.parse('Ax[Ay[(R(x,y)|R(y,x))]]')`  
+`In [12]: formula = Formula.parse('(R(x,y)|R(y,x))')`  
 
 `In [13]: Operators.to_implies_not(formula)`  
 
-`Out [13]: Ax[Ay[(~R(x,y)->R(y,x))]]`  
+`Out [13]: (~R(x,y)->R(y,x))`   
 
-`In [14]: Operators.to_nor(formula)`  
-
-`Out [14]: Ax[Ay[((R(x,y)-|R(y,x))-|(R(x,y)-|R(y,x)))]]`  
+`In [14]: formula = Formula.parse('Ax[Ey[((P(x,y)&Q(y))->R(x))]]')`  
 
 `In [15]: Operators.frege(formula)`  
 
-`Out [15]: ├──x──y──┬─── R(y,x)`  
-`                   └─┬─ R(x,y)`  
+`Out [15]: ├──x─┬y┬─┬─────── R(x)`  
+`                   └─┬─┬─┬─ Q(y)`  
+`                       └─── P(x,y)`  
 
 # Propositional logic
 The section on propositional logic includes many similar classes, methods, and functions. The major difference is that any proof from a certain set of axioms can be generated automatically using functions described below. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
