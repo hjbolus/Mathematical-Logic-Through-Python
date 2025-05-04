@@ -13,12 +13,12 @@ This textbook provides code skeletons for functions that, when implemented, auto
 `Out [2]: Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`  
 
 ## Models
-Models are stored as `Model` objects, based on the notion of set-theoretic structures. They are initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class Model return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class Model determines whether or not all of the formulas evaluate to true in the given model. 
+Models are stored as `Model` objects, based on the notion of set-theoretic structures. They are initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class `Model` return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class `Model` determines whether or not all of the formulas evaluate to true in the given model. 
 
-Although functions and equality are allowed by default, the file functions.py includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equivalent relations and relation interpretations.
+Although functions and equality are allowed by default, the file `functions.py` includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equivalent relations and relation interpretations.
 
 ## Axioms, schemas, and assumptions
-  Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class Schema to allow copying and pasting from displayed objects):
+  Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class `Schema` to allow copying and pasting from displayed objects):
   
 `In [3]: schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`  
 
@@ -87,17 +87,17 @@ Moreover, any formula can be converted to prenex normal form using the function 
 `(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
 
-Duplicated and unnecessary lines can be removed from proofs using the `clean()` method that I added, without changing the validity of the proof.
+Duplicated and unnecessary lines can be removed from proofs using the `clean()` method that I added, without changing the validity of the proof. A similar method of the same name is also available for propositional proofs, described below.
 
 ## Prover objects
-It also includes an interface through objects of class `Prover` that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These check for validity at each step, and allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a Prover object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula 'a=0'.
+It also includes an interface through objects of class `Prover` that assist the construction of FOL proofs by providing convenient methods for adding multiple lines in one line of code. These check for validity at each step, and allow for powerful techniques like chaining equalities and tautological implications of any size. For example, say `prover` is a `Prover` object containing a proof, for which line 7 contains the formula `a=b`, line 3 contains the formula `b=f(b)`, and line 9 contains the formula `f(b)=0`. Then `prover.add_chained_equality('a=0', [7,3,9])` adds a valid series of lines to the proof, ending with a line containing the formula `a=0`.
 
 FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
 
 You can inline proofs using `Prover` objects by using the method `add_proof(proof.conclusion, proof)` of class `Prover`. This automatically adjusts line numbers so that the proof remains valid.
 
 ## Additions
-Of note, a file I added called "Operators.py", with functions that translate a formula that uses one set of operators to one that uses a different set. This is similar to the file Operators.py in Propositions, with the addition that it is used to allow representation of FOL formulae in Fregean notation by first translating operators to ~ and ->.
+Of note, I added a file called `Operators.py`, with functions that translate a formula that uses one set of operators to one that uses a different set. This is similar to the file `Operators.py` in Propositions, with the addition that it is used to allow representation of FOL formulae in Fregean notation by first translating operators to ~ and ->.
 
 `In [12]: formula = Formula.parse('Ax[Ay[(R(x,y)|R(y,x))]]')`  
 
@@ -118,7 +118,7 @@ Of note, a file I added called "Operators.py", with functions that translate a f
 The section on propositional logic includes many similar classes, methods, and functions. The major difference is that any proof from a certain set of axioms can be generated automatically using functions described below. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
 
 ## Syntax
-Formulas are be represented in traditional infix notation by default, but can be translated to Polish notation using the method polish() or can be displayed in Fregean notation using the method frege(), which I added. For example:
+Formulas are be represented in traditional infix notation by default, but can be translated to Polish notation using the method `polish()` of class `Formula` or can be displayed in Fregean notation using the method `frege()`, which I added. For example:
 
 `In [1]: Formula.parse('(p->q)').frege()`  
 
@@ -135,13 +135,13 @@ Formulas are be represented in traditional infix notation by default, but can be
 `       └─┬─ p`  
 
 ## Semantics
-Given any set of constant names, the function `all_models()` returns (a generator yielding) all possible combinations of assignments of True and False to them.
+Given any set of constant names, the function `all_models()` returns (a generator yielding) all possible truth-value assignments.
 
 `In [1]: list(all_models(('p', 'q')))`  
 
 `Out [1]: [{'q': False, 'p': False}, {'q': False, 'p': True}, {'q': True, 'p': False}, {'q': True, 'p': True}]`   
 
-By evaluating a given formula over all models, functions implemented in the file semantics.py can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function `print_truth_table()` prints a truth table for any formula.
+By evaluating a given formula over all models, functions implemented in the file `semantics.py` can perform tasks like determining if a given formula is a contradiction, tautology, or satisfiable; or determine if an inference rule is sound. The function `print_truth_table()` prints a truth table for any formula.
 
 `In [2]: formula = Formula.parse('~(q&p)')`  
 
@@ -155,10 +155,10 @@ By evaluating a given formula over all models, functions implemented in the file
 | T | F  | T       |
 | T | T  | F       |
 
-It can also go the other direction, by synthesizing a formula in CNF or DNF to capture a particular model or set of models, using the functions `synthesize()` or `synthesize_cnf()`.
+It can also go the other direction, by synthesizing a formula in CNF or DNF to capture a particular model or set of models, using the functions `synthesize()` or `synthesize_cnf()`, respectively.
 
 ## Automated proofs
-Given a formula and a model, if the formula evaluates to True in the model, `prove_in_model_full(formula, model)` returns a valid proof of the formula. If the formula evalutes to False in the model, it returns a valid proof of its negation.
+Given a formula and a model, if the formula evaluates to `True` in the model, `prove_in_model_full(formula, model)` returns a valid proof of the formula. If the formula evalutes to `False` in the model, it returns a valid proof of its negation.
 
 `In [4]: formula = Formula.parse('(p->q)')`  
 
@@ -180,8 +180,8 @@ Given a formula and a model, if the formula evaluates to True in the model, `pro
 
 Similarly, given any tautology `tautology`, the function `prove_tautology_full(tautology)` returns a valid proof of the tautology, generated by first proving the formula in all models, then combining those proofs and removing the assumptions unique to their models.
 
-The function `proof_or_counterexample_full(formula)`, if `formula` is a tautology, returns a valid proof; otherwise it returns a model in which the formula evaluates to False.
+If a formula `formula` is a tautology, the function `proof_or_counterexample_full(formula)`, returns a valid proof of it; otherwise it returns a model in which `formula` evaluates to `False`.
 
-On the other hand, if a formula is satisfiable, `model_or_inconsistency_full(formula)` returns a model in which it evaluates to True; otherwise it returns a proof of a contradiction derived by assuming `formula`.
+If a formula `formula` is a contradiction, the function `model_or_inconsistency_full(formula)` returns a proof of a contradiction derived by assuming `formula`; otherwise it returns a model in which it evaluates to `True`.
 
 In order to evaluate if an FOL formula is a tautology, functions for predicate logic convert the formula to a propositional skeleton and take advantage of methods from propositional logic.
