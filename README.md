@@ -13,7 +13,7 @@ This textbook provides code skeletons for functions that, when implemented, auto
 `Out [2]: Ax[(Man(x)->Mortal(x))] is composed of the quantifier A, bound variable x, and statement (Man(x)->Mortal(x)). The statement is composed of subformulas Man(x) and Mortal(x), with the operator ->`  
 
 ## Models
-Models are stored as `Model` objects, initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class Model return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class Model determines whether or not all of the formulas evaluate to true in the given model. 
+Models are stored as `Model` objects, based on the notion of set-theoretic structures. They are initialized with arguments `universe`, `constant_interpretations`, `relation_interpretations`, and `function_interpretations`. The `evaluate_term` and `evaluate_formula` methods of class Model return the constant interpretation or truth value, respectively, of a term or formula in the given model. Given a set of formulas, the method `is_model_of()` of class Model determines whether or not all of the formulas evaluate to true in the given model. 
 
 Although functions and equality are allowed by default, the file functions.py includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equivalent relations and relation interpretations.
 
@@ -95,6 +95,24 @@ It also includes an interface through objects of class `Prover` that assist the 
 FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
 
 You can inline proofs using `Prover` objects by using the method `add_proof(proof.conclusion, proof)` of class `Prover`. This automatically adjusts line numbers so that the proof remains valid.
+
+## Additions
+Of note, a file I added called "Operators.py", with functions that translate a formula that uses one set of operators to one that uses a different set. This is similar to the file Operators.py in Propositions, with the addition that it is used to allow representation of FOL formulae in Fregean notation by first translating operators to ~ and ->.
+
+`In [12]: formula = Formula.parse('Ax[Ay[(R(x,y)|R(y,x))]]')`  
+
+`In [13]: Operators.to_implies_not(formula)`  
+
+`Out [13]: Ax[Ay[(~R(x,y)->R(y,x))]]`  
+
+`In [14]: Operators.to_nor(formula)`  
+
+`Out [14]: Ax[Ay[((R(x,y)-|R(y,x))-|(R(x,y)-|R(y,x)))]]`  
+
+`In [15]: Operators.frege(formula)`  
+
+`Out [15]: ├──x──y──┬─── R(y,x)`  
+`                   └─┬─ R(x,y)`  
 
 # Propositional logic
 The section on propositional logic includes many similar classes, methods, and functions. The major difference is that any proof from a certain set of axioms can be generated automatically using functions described below. The automated proof strategies rely on Modus Ponens being the only inference rule that requires assumptions; others are written as assumptionless inference rules (such as `[] ==> '~F'`), meaning they can be introduced on any lines. The most notable features are described below.
