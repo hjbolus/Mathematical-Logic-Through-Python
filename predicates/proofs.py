@@ -257,13 +257,13 @@ class Schema:
         elif is_binary(root):
             try:
                 first = Schema._instantiate_helper(formula.first,
-                                constants_and_variables_instantiation_map,
-                                relations_instantiation_map,
-                                bound_variables)
+                                                   constants_and_variables_instantiation_map,
+                                                   relations_instantiation_map,
+                                                   bound_variables)
                 second = Schema._instantiate_helper(formula.second,
-                                constants_and_variables_instantiation_map,
-                                relations_instantiation_map,
-                                bound_variables)
+                                                    constants_and_variables_instantiation_map,
+                                                    relations_instantiation_map,
+                                                    bound_variables)
             except ForbiddenVariableError as e:
                 raise Schema.BoundVariableError(e.variable_name, formula.first.root)
             formula = Formula(root, first, second)
@@ -302,9 +302,9 @@ class Schema:
                 variable = str(constants_and_variables_instantiation_map[variable])
             bound_variables = bound_variables | {variable}
             formula = Schema._instantiate_helper(formula.statement,
-                            constants_and_variables_instantiation_map,
-                            relations_instantiation_map,
-                            bound_variables)
+                                                 constants_and_variables_instantiation_map,
+                                                 relations_instantiation_map,
+                                                 bound_variables)
             formula = Formula(root, variable, formula)
         return formula
         # Harris J. Bolus - Task 9.3
@@ -442,7 +442,10 @@ class Schema:
 
         bound_variables = set()
         try:
-            return Schema._instantiate_helper(self.formula, constants_and_variables_instantiation_map, relations_instantiation_map, bound_variables)
+            return Schema._instantiate_helper(self.formula, 
+                                              constants_and_variables_instantiation_map, 
+                                              relations_instantiation_map, 
+                                              bound_variables)
         except Schema.BoundVariableError as e:
             print(f'BoundVariableError: {e.variable_name} is bound within the relation {e.relation_name}')
             return None
@@ -906,6 +909,7 @@ class Proof:
             return [line.antecedent_line_number, line.conditional_line_number]
         else:
             return []
+        # personal task
 
     def uncite_duplicate_lines(self) -> list:
         """Adjusts the assumptions of any line that cites a previous line with a duplicate
@@ -1183,7 +1187,7 @@ def is_tautology(formula: Union[Formula, str]) -> bool:
     if isinstance(formula, str):
         formula = Formula.parse(formula)
     return is_propositional_tautology(formula.propositional_skeleton()[0])
-
+# personal task
 
 # consider changing instantiate so that it can accept either strings or Term items as values of dict (not just strings for variable values and Term objects for constant values)
 # pg. 148
