@@ -87,6 +87,10 @@ Moreover, any formula can be converted to prenex normal form using the function 
 `(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
 
+Any FOL tautology can be proven using the function prove_tautology(). Under the hood, this relies on converting the FOL formula to a propositional formula and proving the corresponding propositional tautology.
+
+Given a set of closed prenex normal form sentences, the function model_or_inconsistency() will return a model if they are satisfiable or else a proof that they are not. Other functions from the file completeness.py can be used to existentially and universally close a given set of unclosed prenex normal form sentences.
+
 Duplicated and unnecessary lines can be removed from proofs using the `clean()` method that I added, without changing the validity of the proof. A similar method of the same name is also available for propositional proofs, described below.
 
 ## Prover objects
