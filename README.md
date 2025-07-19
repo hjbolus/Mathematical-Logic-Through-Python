@@ -87,9 +87,9 @@ Moreover, any formula can be converted to prenex normal form using the function 
 `(Ez1[Az2[Ez14[Az15[~~(~R(z1,z2)&~z14=z15)]]]]->~~(~Ax[Ey[R(x,y)]]&~Ax[Ey[x=y]])))    (MP from lines 111 and 113)`  
 `QED`  
 
-Any FOL tautology can be proven using the function prove_tautology(). Under the hood, this relies on converting the FOL formula to a propositional formula and proving the corresponding propositional tautology.
+Any FOL tautology can be proven using the function `prove_tautology()`. Under the hood, this relies on converting the FOL formula to a propositional formula and proving the corresponding propositional tautology.
 
-Given a set of closed prenex normal form sentences, the function model_or_inconsistency() will return a model if they are satisfiable or else a proof that they are not. Other functions from the file completeness.py can be used to existentially and universally close a given set of unclosed prenex normal form sentences.
+Given a set of closed prenex normal form sentences, the function `model_or_inconsistency()` will return a model if they are satisfiable or else a proof that they are not. Other functions from the file `completeness.py` can be used to existentially and universally close a given set of unclosed prenex normal form sentences.
 
 Duplicated and unnecessary lines can be removed from proofs using the `clean()` method that I added, without changing the validity of the proof. A similar method of the same name is also available for propositional proofs, described below.
 
@@ -98,7 +98,7 @@ It also includes an interface through objects of class `Prover` that assist the 
 
 FOL proofs are allowed to introduce any tautology on a new line, with 'tautology' defined as a formula whose propositional skeleton is a propositional logic tautology. This is justified by the implementation of the Tautology Theorem for propositional logic, which provides a method to prove any propositional tautology.
 
-You can inline proofs using `Prover` objects by using the method `add_proof(proof.conclusion, proof)` of class `Prover`. This automatically adjusts line numbers so that the proof remains valid.
+You can inline proofs using `Prover` objects by using the method `add_proof()` of class `Prover`. This automatically adjusts line numbers so that the proof remains valid.
 
 ## Additions
 Of note, I added a file called `Operators.py`, with functions that translate a formula that uses one set of operators to one that uses a different set. This is similar to the file `Operators.py` in Propositions, with the addition that it is used to allow representation of FOL formulae in Fregean notation by first translating operators to ~ and ->.
