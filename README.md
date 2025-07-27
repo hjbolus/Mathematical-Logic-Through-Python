@@ -18,9 +18,9 @@ Models are stored as `Model` objects, based on the notion of set-theoretic struc
 Although functions and equality are allowed by default, the file `functions.py` includes functions that eliminate the use of functions and/or equality from models and formulas by replacing them with equivalent relations and relation interpretations.
 
 ## Axioms, schemas, and assumptions
-  Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows (I added a parsing method to the class `Schema` to allow copying and pasting from displayed objects):
+  Axioms, axiom schemas, and assumptions are implemented as `Schema` objects, which include a formula and a set of templates indicating which terms and relations may be instantiated with other values. The following schema expresses the substitutability of equals, and can be instantiated as follows:
   
-`In [3]: schema = Schema.parse('Schema: (c=d->(R(c)->R(d))) [templates: R, c, d]')`  
+`In [3]: schema = Schema(Formula.parse('(c=d->(R(c)->R(d)))'), {'R', 'c', 'd'})`  
 
 `In [4]: schema.instantiate({'R': Formula.parse('_=z'), 'c': Term('x'), 'd': Term('y')})`  
 
