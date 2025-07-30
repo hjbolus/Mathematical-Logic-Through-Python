@@ -1199,4 +1199,4 @@ def is_tautology(formula: Union[Formula, str]) -> bool:
 # problematic example 2
 # schema = Schema(Formula.parse('Ey[~y=x]'), {'y'})
 # schema.instantiate({'y':'x'})
-# returns unfortunate instance Ey[~x=x]
+# returns unfortunate instance Ex[~x=x]
