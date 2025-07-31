@@ -7,7 +7,9 @@ This textbook provides code skeletons for functions that, when implemented, auto
   Formulas are stored as objects of class `Formula`, which are composed of operators, subformulas, and terms (`Term` objects) in an expression tree or directed-acyclic graph. Terms are either constants, variables, or functions. Terms and formulas can be parsed from strings into objects of their respective type using the `parse()` methods of their respective classes. For example,
 
 iii.
+
 ooo.
+
    .
 
 `In [1]: formula = Formula.parse('Ax[(Man(x)->Mortal(x))]                                     `  
