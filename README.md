@@ -1,7 +1,7 @@
 Read the official documentation here: https://www.logicthrupython.org/api/.
 
 This textbook provides code skeletons for functions that, when implemented, automate tasks in formal logic. I worked on them over the last year, and the result is essentially a Python package for classical first order and propositional logic. This repository is the first (and only, as of July 2024) set of solutions available. I have added some utilities without changing the existing ones, so everything in the documentation above is accurate.
-
+ 
 # First order logic
 ## Formulas
   Formulas are stored as objects of class `Formula`, which are composed of operators, subformulas, and terms (`Term` objects) in an expression tree or directed-acyclic graph. Terms are either constants, variables, or functions. Terms and formulas can be parsed from strings into objects of their respective type using the `parse()` methods of their respective classes. For example,
