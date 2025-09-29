@@ -6,10 +6,8 @@
 
 """Syntactic conversion of predicate formulas to use only specific sets of
 operators."""
-import sys
-sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
-from predicates.syntax import *
-from predicates.proofs import Schema
+from .syntax import *
+from .proofs import Schema
 
 def substitute_operators(self, substitution_map: Mapping[str, Formula]) -> Formula:
     """Substitutes in the current formula, each constant or operator `op`
