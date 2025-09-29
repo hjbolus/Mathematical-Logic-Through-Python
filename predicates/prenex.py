@@ -7,14 +7,11 @@
 """Conversion of predicate-logic formulas into prenex normal form."""
 
 from typing import Tuple
-
-from logic_utils import fresh_variable_name_generator, is_z_and_number
-import sys
-sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
-from predicates.syntax import *
-from predicates.proofs import *
-from predicates.prover import *
-from predicates.deduction import *
+from ..logic_utils import fresh_variable_name_generator, is_z_and_number
+from .syntax import *
+from .proofs import *
+from .prover import *
+from .deduction import *
 
 #: Additional axioms of quantification for Predicate Logic.
 ADDITIONAL_QUANTIFICATION_AXIOMS = (
