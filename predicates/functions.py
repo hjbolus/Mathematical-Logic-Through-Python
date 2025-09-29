@@ -9,7 +9,7 @@ equality."""
 
 from typing import AbstractSet, List, Set
 from collections import Counter
-from .logic_utils import fresh_variable_name_generator, is_z_and_number
+from ..logic_utils import fresh_variable_name_generator, is_z_and_number
 from .syntax import *
 from .semantics import *
 from functools import reduce
