@@ -9,7 +9,7 @@
 from typing import AbstractSet, Container, Set, Union
 import time
 from itertools import product
-from .logic_utils import fresh_constant_name_generator
+from ..logic_utils import fresh_constant_name_generator
 from .syntax import *
 from .semantics import *
 from .proofs import *
