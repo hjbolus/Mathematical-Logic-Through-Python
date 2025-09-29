@@ -8,16 +8,14 @@
 
 from typing import AbstractSet, Container, Set, Union
 import time
-from logic_utils import fresh_constant_name_generator
 from itertools import product
-import sys
-sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
-from predicates.syntax import *
-from predicates.semantics import *
-from predicates.proofs import *
-from predicates.prover import *
-from predicates.deduction import *
-from predicates.prenex import *
+from .logic_utils import fresh_constant_name_generator
+from .syntax import *
+from .semantics import *
+from .proofs import *
+from .prover import *
+from .deduction import *
+from .prenex import *
 
 def get_constants(formulas: AbstractSet[Formula]) -> Set[str]:
     """Finds all constant names in the given formulas.
