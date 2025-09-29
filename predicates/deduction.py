@@ -5,11 +5,9 @@
 # File name: predicates/deduction.py
 
 """Useful proof manipulation maneuvers in Predicate Logic."""
-import sys
-sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
-from predicates.syntax import *
-from predicates.proofs import *
-from predicates.prover import *
+from .syntax import *
+from .proofs import *
+from .prover import *
 
 def remove_assumption(proof: Proof, assumption: Formula,
                       print_as_proof_forms: bool = False) -> Proof:
