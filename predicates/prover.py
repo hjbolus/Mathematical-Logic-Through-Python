@@ -9,12 +9,9 @@ using them."""
 
 from typing import AbstractSet, Collection, FrozenSet, List, Mapping, \
                    Sequence, Tuple, Union
-
-from logic_utils import fresh_variable_name_generator, is_z_and_number
-import sys
-sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
-from predicates.syntax import *
-from predicates.proofs import *
+from ..logic_utils import fresh_variable_name_generator, is_z_and_number
+from .syntax import *
+from .proofs import *
 
 class Prover:
     """A class for gradually creating a predicate-logic proof from given
