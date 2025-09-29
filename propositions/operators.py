@@ -7,8 +7,8 @@
 """Syntactic conversion of propositional formulas to use only specific sets of
 operators."""
 
-from syntax import *
-from semantics import *
+from .syntax import *
+from .semantics import *
 
 def to_not_and_or(formula: Formula) -> Formula:
     """Syntactically converts the given formula to an equivalent formula that
@@ -165,3 +165,4 @@ def to_nor(formula: Formula) -> Formula:
                 '<->': Formula.parse('((p-|(p-|q))-|(q-|(p-|q)))')}
     return Formula.substitute_operators(formula, sub_map)
     # Personal task
+
