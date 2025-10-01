@@ -103,15 +103,15 @@ You can inline proofs using `Prover` objects by using the method `add_proof()` o
 ## Additions
 Of note, I added a file called `Operators.py`, with functions that translate a formula that uses one set of operators to one that uses a different set. This is similar to the file `Operators.py` in Propositions, with the addition that it is used to allow representation of FOL formulae in Fregean notation by first translating operators to ~ and ->.
 
-`In [12]: formula = Formula.parse('(R(x,y)|R(y,x))')`  
+`In [12]: formula = Formula.parse('(R(x)|R(y))')`  
 
-`In [13]: Operators.to_implies_not(formula)`  
+`In [13]: operators.to_implies_not(formula)`  
 
-`Out [13]: (~R(x,y)->R(y,x))`   
+`Out [13]: (~R(x)->R(y))`   
 
 `In [14]: formula = Formula.parse('Ax[Ey[((P(x,y)&Q(y))->R(x))]]')`  
 
-`In [15]: Operators.frege(formula)`  
+`In [15]: operators.frege(formula)`  
 
 `Out [15]: ├──x─┬y┬─┬─────── R(x)`  
 `                   └─┬─┬─┬─ Q(y)`  
