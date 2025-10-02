@@ -7,9 +7,9 @@
 """Programmatic proof of the soundness of Propositional Logic."""
 
 from typing import Tuple
-from .syntax import *
-from .semantics import *
-from .proofs import *
+from syntax import *
+from semantics import *
+from proofs import *
 
 def rule_nonsoundness_from_specialization_nonsoundness(
         general: InferenceRule, specialization: InferenceRule, model: Model) \
