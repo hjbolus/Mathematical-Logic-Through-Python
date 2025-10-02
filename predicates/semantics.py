@@ -7,8 +7,8 @@
 """Semantic analysis of predicate-logic expressions."""
 
 from typing import AbstractSet, FrozenSet, Generic, Mapping, Tuple, TypeVar
-from ..logic_utils import frozen, frozendict
-from .syntax import *
+from logic_utils import frozen, frozendict
+from syntax import *
 
 #: A generic type for a universe element in a model.
 T = TypeVar('T')
