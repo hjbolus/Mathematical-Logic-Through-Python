@@ -7,13 +7,13 @@
 """The Tautology Theorem and its implications."""
 
 from typing import List, Sequence, Union
-from ..logic_utils import frozendict
-from .syntax import *
-from .semantics import *
-from .proofs import *
-from .axiomatic_systems import *
-from .deduction import *
-from .operators import *
+from logic_utils import frozendict
+from syntax import *
+from semantics import *
+from proofs import *
+from axiomatic_systems import *
+from deduction import *
+from operators import *
 from functools import reduce
 
 def formulas_capturing_model(model: Model) -> List[Formula]:
