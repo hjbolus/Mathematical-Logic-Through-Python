@@ -9,13 +9,13 @@
 from typing import AbstractSet, Container, Set, Union
 import time
 from itertools import product
-from ..logic_utils import fresh_constant_name_generator
-from .syntax import *
-from .semantics import *
-from .proofs import *
-from .prover import *
-from .deduction import *
-from .prenex import *
+from logic_utils import fresh_constant_name_generator
+from syntax import *
+from semantics import *
+from proofs import *
+from prover import *
+from deduction import *
+from prenex import *
 
 def get_constants(formulas: AbstractSet[Formula]) -> Set[str]:
     """Finds all constant names in the given formulas.
