@@ -5,9 +5,9 @@
 # File name: predicates/deduction.py
 
 """Useful proof manipulation maneuvers in Predicate Logic."""
-from .syntax import *
-from .proofs import *
-from .prover import *
+from syntax import *
+from proofs import *
+from prover import *
 
 def remove_assumption(proof: Proof, assumption: Formula,
                       print_as_proof_forms: bool = False) -> Proof:
