@@ -5,11 +5,11 @@
 # File name: predicates/some_proofs.py
 
 """Some proofs in Predicate Logic."""
-from .syntax import *
-from .proofs import *
-from .prover import *
-from .deduction import *
-from .prenex import equivalence_of
+from syntax import *
+from proofs import *
+from prover import *
+from deduction import *
+from prenex import equivalence_of
 
 def prove_syllogism(print_as_proof_forms: bool = False) -> Proof:
     """Proves from the assumptions:
