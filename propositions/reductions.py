@@ -8,9 +8,9 @@
 
 from __future__ import annotations
 from typing import AbstractSet, Mapping, Tuple, Union
-from .syntax import *
-from .semantics import *
-from .operators import *
+from syntax import *
+from semantics import *
+from operators import *
 
 #: A graph on a vertex set of the form `(1, ..., n_vertices)`,
 #: represented by the number of vertices `n_vertices` and a set of edges over
@@ -144,4 +144,5 @@ def tricolor_graph(graph: Graph) -> Union[Mapping[int, int], None]:
         if evaluate(formula, assignment):
             return assignment_to_3coloring(graph, assignment)
     return None
+
 
