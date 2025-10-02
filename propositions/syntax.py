@@ -10,7 +10,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Mapping, Optional, Set, Tuple, Union
 from itertools import takewhile
-from ..logic_utils import frozen, memoized_parameterless_method
+from logic_utils import frozen, memoized_parameterless_method
 
 @lru_cache(maxsize=100) # Cache the return value of is_variable
 def is_variable(string: str) -> bool:
@@ -533,4 +533,5 @@ class Formula:
         string = formula._frege_helper()
         print('├─'+'\n  '.join(string))
     # Personal task - Harris J. Bolus
+
 
