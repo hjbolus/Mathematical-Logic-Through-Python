@@ -7,8 +7,8 @@
 """Proofs by deduction in Propositional Logic."""
 from __future__ import annotations
 from typing import AbstractSet, FrozenSet, List, Mapping, Optional, Sequence, Set, Tuple, Union
-from ..logic_utils import frozen, memoized_parameterless_method
-from .syntax import *
+from logic_utils import frozen, memoized_parameterless_method
+from syntax import *
 
 #: A mapping from variable names to formulas.
 SpecializationMap = Mapping[str, Formula]
