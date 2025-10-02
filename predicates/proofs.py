@@ -8,9 +8,9 @@
 
 from __future__ import annotations
 from typing import AbstractSet, FrozenSet, Mapping, Sequence, Tuple, Union
-from ..logic_utils import frozen, frozendict
-from ..propositions.semantics import is_tautology as is_propositional_tautology
-from .syntax import *
+from logic_utils import frozen, frozendict
+from propositions.semantics import is_tautology as is_propositional_tautology
+from syntax import *
 
 #: A mapping from constant names, variable names, and relation names to
 #: terms, variable names, and formulas respectively.
