@@ -7,8 +7,8 @@
 """Semantic analysis of propositional-logic constructs."""
 
 from typing import AbstractSet, Iterable, Iterator, Mapping, Sequence, Tuple
-from .syntax import *
-from .proofs import *
+from syntax import *
+from proofs import *
 from itertools import *
 
 #: A model for propositional-logic formulas, a mapping from variable names to truth values.
@@ -379,4 +379,5 @@ def is_sound_inference(rule: InferenceRule) -> bool:
     """
     return all((evaluate_inference(rule, model) for model in all_models(InferenceRule.variables(rule))))
     # Harris J. Bolus - Task 4.3
+
 
