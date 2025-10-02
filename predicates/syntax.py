@@ -9,7 +9,7 @@
 from __future__ import annotations
 from functools import lru_cache, reduce
 from typing import AbstractSet, Mapping, Optional, Sequence, Set, Tuple, Union
-from ..logic_utils import fresh_variable_name_generator, frozen, memoized_parameterless_method
+from logic_utils import fresh_variable_name_generator, frozen, memoized_parameterless_method
 
 import sys
 sys.path.append('/Users/harrisbolus/Desktop/Fun/Mathematical logic thru python')
